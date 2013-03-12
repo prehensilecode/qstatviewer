@@ -5,7 +5,7 @@ import os
 
 from PBSQuery import PBSQuery
 
-pq = PBSQuery('rhel6pbs.deac.wfu.edu')
+pq = PBSQuery('torque')
 jobs = pq.getjobs()
 
 print '# There are %d jobs\n' % (len(jobs))

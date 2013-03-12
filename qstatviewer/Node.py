@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-# Author: David Chin <dwchin@acm.org>
-# $Id: Node.py 479 2013-02-20 16:27:37Z chindw $
+# Author: David Chin <dwchin . acm.org>
 
 # qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
 # http://creativecommons.org/licenses/by-sa/3.0/deed.en_US

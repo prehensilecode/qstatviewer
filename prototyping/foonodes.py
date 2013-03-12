@@ -5,7 +5,7 @@ import os
 
 from PBSQuery import PBSQuery
 
-pq = PBSQuery('rhel6pbs.deac.wfu.edu')
+pq = PBSQuery('torque')
 nodes = pq.getnodes()
 
 print '# There are %d nodes\n' % (len(nodes))

@@ -1,4 +1,3 @@
-# $Id: INSTALL 469 2013-01-31 21:36:36Z chindw $
 
 To install this package globally - requires administrative rights:
     python setup.py install

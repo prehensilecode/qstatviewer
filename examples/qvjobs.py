@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """Print out all jobs in a QstatViewer instance"""
 
-# Author: David Chin <dwchin@acm.org>
-# $Id: qvjobs.py 479 2013-02-20 16:27:37Z chindw $
+# Author: David Chin <dwchin . acm.org>
 
 # qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
 # http://creativecommons.org/licenses/by-sa/3.0/deed.en_US

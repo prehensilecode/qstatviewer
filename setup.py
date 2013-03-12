@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-# Author: David Chin <dwchin@acm.org>
-# $Id: setup.py 488 2013-03-06 20:41:05Z chindw $
+# Author: David Chin <dwchin . acm.org>
 
 """Build/install script for qstatviewer. 
 See INSTALL for installation instructions.
@@ -9,17 +8,19 @@ See INSTALL for installation instructions.
 
 from distutils.core import setup
 
+# When building RPMs, the "license" string may have to be changed to 'GPL'
+
 setup(name = 'qstatviewer',
       version = '0.8.5',
       packages = ['qstatviewer'],
       scripts = ['scripts/viewnodes', 'scripts/viewjobs', 'scripts/userjobs', 'scripts/users_on_node', 'scripts/jobinfo_node'],
-      license = 'GPL',
+      license = 'CC-BY-SA 3.0',
       author = 'David Chin',
       author_email = 'dwchin@acm.org',
       maintainer = 'David Chin',
       maintainer_email = 'dwchin@acm.org',
       description = 'Encapsulates information about TORQUE jobs',
-      url = 'http://users.wfu.edu/chindw/', 
-      download_url = 'http://users.wfu.edu/chindw/qstatviewer',
+      url = 'https://github.com/prehensilecode/qstatviewer', 
+      download_url = 'https://github.com/prehensilecode/qstatviewer',
       )
 

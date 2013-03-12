@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-# Author: G. Lopez <lopemg6 AT wfu.edu>
-# $Id: nodes.py 479 2013-02-20 16:27:37Z chindw $
+# Author: G. Lopez <lopemg6 . wfu.edu>
 
 # this is just a script to print out some information about what is going on with
 # the nodes in the cluster.  written by g. lopez.
