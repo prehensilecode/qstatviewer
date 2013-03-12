@@ -1,0 +1,34 @@
+*** 2010-04-28 : need to compare output from previous committed version 
+                 to working version (which has the pattern and search dicts)
+    DONE
+
+* Serialize in XML
+  -- see http://sourceforge.net/projects/pyxser/
+
+* Pickle (?)
+
+* Separate out the Job class?
+  DONE
+
+* Deal with Job.state_dict usage
+  N/A
+
+* Hide all Job.set_blah_from_str() functions
+  N/A
+
+* Update to use pbs_python (specifically, the PBSQuery class)
+  DONE
+
+* write string reprs for Node and Job classes
+
+* fix jobstr match in viewnodes
+
+* nodes_chindw.py shows jobs on nodes which have no jobs - seems to be a mixup of which node has which job(s)
+  DONE
+
+* nodes_chindw.py to be renamed to viewnodes
+  DONE
+
+* viewnodes doesn't handle total memory option right for jobs spanning more than one node
+  DONE
+  

@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+# Author: David Chin <dwchin@acm.org>
+# $Id: jobinfo_node 488 2013-03-06 20:41:05Z chindw $
+
+# qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+# http://creativecommons.org/licenses/by-sa/3.0/deed.en_US
+
+import sys, os
+import re
+import datetime
+import qstatviewer as qv
+from optparse import OptionParser
+
+def output_stuff(nodelist):
+    for node in nodelist:
+        unique_jobs = q.nodes[node].unique_jobs
+        print('     NODE   JOB IDS')
+        print('=========   =======')
+        jobstr = ''
+        for jobid in unique_jobs:
+            if q.jobs[jobid].state == 'R':
+                jobstr = ' '.join([jobstr, jobid.split('.')[0]])
+        print('{n:>9.9} : {j}'.format(n=q.nodes[node].name, j=jobstr))
+        print('')
+
+        formatstr = "{space:>8}{ji:>11} {o:<8} {n:>4} {vm:>10} {wt:>17}"
+        print(formatstr.format(space='', ji='JOBID', o='USERNAME', n='NCPU', vm='MEM USED', wt='WALLTIME'))
+        for jobid in unique_jobs:
+            job = q.jobs[jobid]
+            if job.state == 'R':
+                ji = jobid.split('.')[0]
+
+                walltime = [int(t) for t in job.resources_used['walltime'].split(':')]
+                wt = datetime.timedelta(hours=walltime[0], minutes=walltime[1], seconds=walltime[2])
+
+                vm = qv.convert_memory(job.resources_used['vmem'])
+                vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
+
+                print(formatstr.format(space='', ji=ji, o=job.owner, n=job.ncpus, vm=vmstr, wt=wt))
+        print('')
+
+def main(node=None, clan=None, fabric=None, property=None):
+    global q
+
+    nodelist = []
+    clanlist = []
+    fabriclist = []
+    propertylist = []
+
+    if node:
+        nodelist = node.split(',')
+
+    if clan:
+        clanlist = clan.split(',')
+
+    if fabric:
+        fabriclist = fabric.split(',')
+    
+    if property:
+        propertylist = property.split(',')
+
+    if nodelist:
+        pass
+    elif clanlist:
+        nodelist = []
+        for clan in clanlist:
+            for nodename,node in q.nodes.iteritems():
+                if node.clan == clan:
+                    nodelist.append(nodename)
+    elif fabriclist:
+        nodelist = []
+        for fabric in fabriclist:
+            for nodename,node in q.nodes.iteritems():
+                if node.fabric == fabric:
+                    nodelist.append(nodename)
+    elif propertylist:
+        nodelist = []
+        for property in propertylist:
+            for nodename,node in q.nodes.iteritems():
+                if property in node.properties:
+                    nodelist.append(nodename)
+    else:
+        print('BYE!')
+        sys.exit(1)
+
+    output_stuff(nodelist)
+
+    #sorted_nodenames = sorted(q.nodes.keys())
+    #for nodename in sorted_nodenames:
+    #    node = q.nodes[nodename]
+    #    jobstr = ' '.join(sorted(set([j.split('.')[0] for j in node.unique_jobs])))
+    #    if not jobstr:
+    #        jobstr = ''
+    #    print("{0:>9.9} : {1}".format(nodename, jobstr))
+
+
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-n', '--node', type='str', dest='node', metavar='NODE',
+                      help='list job info for NODE; NODE may be a comma-separated list')
+    parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
+                      help='list job info for all nodes in CLAN; CLAN may be a comma-separated list')
+    parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
+                      help='list job info for all nodes with network FABRIC; FABRIC may be a comma-separated list')
+    parser.add_option('-p', '--property', type='str', dest='property', metavar='PROPERTY',
+                      help='list job info for all nodes with PROPERTY; PROPERTY may be a comma-separated list')
+    (options, args) = parser.parse_args()
+
+    if not (options.node or options.clan or options.fabric or options.property):
+        parser.print_help()
+        sys.exit(1)
+
+    q = qv.QstatViewer()
+
+    main(node=options.node, clan=options.clan, fabric=options.fabric, property=options.property)
+

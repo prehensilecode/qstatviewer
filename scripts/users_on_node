@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+
+# Author: David Chin <dwchin@acm.org>
+# $Id: users_on_node 479 2013-02-20 16:27:37Z chindw $
+
+# qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+# http://creativecommons.org/licenses/by-sa/3.0/deed.en_US
+
+# Print out users on given nodes
+
+import sys, os
+import re
+import qstatviewer as qv
+
+from optparse import OptionParser
+
+usage = "usage: %prog [options] nodename [nodename ...]"
+parser = OptionParser(usage)
+parser.add_option('-a', '--all', action='store_true', dest='allnodes', 
+    default=False, help='print all nodes and users using them')
+parser.add_option('-c', '--clan', action='store', type='str',
+                  dest='clan', help='restrict to clan CLAN (shorthand accepted: 01=clan01, g02=grid02')
+
+(options, args) = parser.parse_args()
+if not args and not options.allnodes and not options.clan:
+    parser.print_help()
+    sys.exit(0)
+
+q = qv.QstatViewer(debug_p=False)
+
+if options.allnodes:
+    sorted_nodenames = sorted(q.nodes.keys())
+
+    for nodename, node in sorted(q.nodes.iteritems()):
+        userstr = ''
+        userset = set()
+        for j in node.unique_jobs:
+            userset.add(q.jobs[j].owner)
+            userstr = ' '.join(sorted(userset))
+        if userstr:
+            print("{0:>9.9} : {1}".format(nodename, userstr))
+elif options.clan:
+    # re pats for handling shorthand clan names
+    clanpat = re.compile('^(\d{2})$')
+    gridpat = re.compile('^g(\d{2})$')
+
+    for c in options.clan.split(','):
+        cp = clanpat.search(c)
+        gp = gridpat.search(c)
+
+        if cp:
+            c = ''.join(['clan', cp.group(1)])
+        elif gp:
+            c = ''.join(['grid', gp.group(1)])
+
+        for nodename,node in sorted(q.nodes_in_clan(c).iteritems()):
+            userstr = ''
+            userset = set()
+            for j in node.unique_jobs:
+                userset.add(q.jobs[j].owner)
+                userstr = ' '.join(sorted(userset))
+            if userstr:
+                print("{0:>9.9} : {1}".format(nodename, userstr))
+else:
+    for nodename in args:
+        if nodename in q.nodes:
+            node = q.nodes[nodename]
+            userset = set()
+            for j in node.unique_jobs:
+                userset.add(q.jobs[j].owner)
+            userstr = ' '.join(sorted(userset))
+            if userstr:
+                print("{0:>9.9} : {1}".format(nodename, userstr))
+            else:
+                print("{0:>9.9} : ".format(nodename))
+        else:
+            print("No such node {0}".format(nodename))
+
+

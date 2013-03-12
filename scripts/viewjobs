@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+"""Displays information about one or more users' jobs"""
+
+# Author: David Chin <dwchin@acm.org>
+# $Id: viewjobs 487 2013-03-05 15:28:10Z chindw $
+
+# qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+# http://creativecommons.org/licenses/by-sa/3.0/deed.en_US
+
+import sys, os, re
+import datetime
+from optparse import OptionParser
+
+import qstatviewer
+
+def main(user=None, all=False):
+    qv = qstatviewer.QstatViewer()
+
+    print('{0}:'.format(qv.pbsquery.server))
+    print("{j:<11} {u:<8} {g:^13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
+        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
+    print("-------------------------------------------------------------------------------------------------------------------------------------")
+    
+    print_this_p = False
+
+    dayspat = re.compile('\ days?,')
+
+    for jobid, j in sorted(qv.jobs.iteritems()):
+        nodect = j.resource_list['nodect']
+        ntasks = j.resource_list['ncpus']
+        mem    = qstatviewer.convert_memory(j.resource_list['mem'], 'gb')
+        wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
+
+        if user:
+            #print 'FOOBAR: j.owner = ', j.owner
+            if j.owner == user:
+                print_this_p = True
+        elif all:
+            print_this_p = True
+        else:
+            print_this_p = True
+
+        if j.state == 'R':
+            if not j.resources_used:
+                # for some reason, some running jobs have no resources_used element
+                #print 'FOOBAR: id = ', jobid
+                #print 'FOOBAR:      ', j.resources_used
+                #print ''
+                elapse = 'n/a'
+            if j.resources_used:
+                elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
+        else:
+            elapse = 'n/a'
+
+        if mem['qty']:
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
+        else:
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3} {ntasks:>5} {mem:>6.2} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
+
+        if print_this_p:
+            print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
+            print_this_p = False
+
+if __name__ == '__main__':
+    usage = """usage: %prog [options] [USERNAME]
+        If USERNAME is given, only jobs belonging to USERNAME are displayed"""
+    parser = OptionParser(usage)
+    parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
+                      help='displays all jobs')
+    (options, args) = parser.parse_args()
+
+    if (not args) and (not options.all):
+        parser.print_help()
+        sys.exit(1)
+
+    if args:
+        main(user=args[0], all=options.all)
+    else:
+        main(user=None, all=options.all)
+

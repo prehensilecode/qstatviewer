@@ -1,0 +1,12 @@
+# $Id: INSTALL 469 2013-01-31 21:36:36Z chindw $
+
+To install this package globally - requires administrative rights:
+    python setup.py install
+
+To install in your own directory -- by default, ~/.local/lib/python${PYTHONVERSION}/site-packages
+    Add this environment variable: PYTHONPATH = ~/.local/lib/python${PYTHONVERSION}/site-packages
+    python setup.py install --user
+
+To create an RPM:
+    python setup.py bdist_rpm
+

@@ -1,0 +1,323 @@
+#!/usr/bin/env python
+
+# Author: David Chin <dwchin@acm.org>
+# $Id: viewnodes 479 2013-02-20 16:27:37Z chindw $
+
+# qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+# http://creativecommons.org/licenses/by-sa/3.0/deed.en_US
+
+# This script replicates almost all functionality in the nodes.py
+# script from Graham Lopez <lopemg6 at wfu dot edu> (see nodes.py in this directory)
+
+import os
+import sys
+import getopt
+import re
+
+import qstatviewer
+from qstatviewer import convert_memory
+
+from optparse import OptionParser
+
+# these are for the colors used to print the output.  Go to the bottom of this
+# script to change the values
+#
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+# Background color codes:
+# 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
+#
+# example: underscored red with yellow background --> 4;31;33
+#
+RED = '\033[0;31m'
+BOLDRED = '\033[1;31m'
+
+GREEN = '\033[0;32m'
+BOLDGREEN = '\033[1;32m'
+
+YELLOW = '\033[0;33m'
+BOLDYELLOW = '\033[1;33m'
+
+BLUE = '\033[0;34m'
+BOLDBLUE = '\033[1;34m'
+
+PURPLE = '\033[0;35m'
+BOLDPURPLE = '\033[1;35m'
+
+CYAN = '\033[0;36m'
+BOLDCYAN = '\033[1;36m'
+
+WHITE = '\033[0;37m'
+BOLDWHITE = '\033[1;37m'
+
+BLACK = '\033[0;30m'
+BOLDBLACK = '\033[1;30m'
+
+DEF = '\033[0;00m'
+
+END = '\033[0m'
+
+debug_p = False
+
+def main(mem=None, procs=None, net=None, clan=None, all=False, free=False, 
+         jobsubstr=None, bare=False, totalmem=False, ids_only=False,
+         users=False):
+    global debug_p
+
+    qv = qstatviewer.QstatViewer()
+
+    sorted_nodenames = sorted(qv.nodes.keys())
+
+    if bare:
+        green = ''
+        default = ''
+        red = ''
+        end = ''
+    else:
+        green = GREEN
+        default = DEF
+        red = RED
+        end = END
+
+    print("key: {green}green = match, {default}normal = free (but not match), {red}red = not available{end}".format(green=green, default=default, red=red, end=end))
+
+    if totalmem:
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - est. tot. vmem usage (NB: may be inaccurate)"
+    elif ids_only:
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - job IDs"
+    elif users:
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - users"
+    else:
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| job desc. (id, owner, name, loc/tot #procs)"
+    print header_formatstr.format(name='name', clan='clan', procs='procs', mem='mem', net='net', state='state')
+    print "----------+--------+-------+--------+-----+--------+-----------------------------------------------------------"
+
+
+    # for inserting blank line between clans
+    first_node_p = True
+
+    for nodename in sorted_nodenames:
+        node = qv.nodes[nodename]
+
+        # decide if blank line is needed
+        this_clan = node.clan
+        if not first_node_p and (this_clan != last_clan):
+            print('')
+
+        if node.state == 'down':
+            if all:
+                if bare:
+                    color = ''
+                    end = ''
+                else:
+                    color = RED
+                    end = END
+
+                print("{color}{nodename:^10.10}| is down!!{end}".format(color=color, nodename=nodename, end=end))
+        else:
+
+            # properties not asked for will always "match"
+            if not mem:
+                mem_match_p = True
+            else:
+                mem_match_p = (mem <= float(node.physmem/1024))
+
+            if not procs:
+                procs_match_p = True
+            else:
+                procs_match_p = (procs <= node.free_cpus())
+
+            if not net:
+                net_match_p = True
+            else:
+                net_match_p = (net == node.fabric)
+
+            if not clan:
+                clan_match_p = True
+            else:
+                # re pats for handling shorthand clan names
+                clanpat = re.compile('^(\d{2})$')
+                gridpat = re.compile('^g(\d{2})$')
+
+                clan_match_p = False
+
+                clanlist = clan.split(',')
+                for c in clanlist:
+                    if debug_p:
+                        print 'DEBUG: c = ', c
+                    cp = clanpat.search(c)
+                    gp = gridpat.search(c)
+                    if cp:
+                        c = ''.join(['clan', cp.group(1)])
+                    elif gp:
+                        c = ''.join(['grid', gp.group(1)])
+
+                    if debug_p:
+                        print 'DEBUG: c = ', c
+                        print 'DEBUG: node.clan = ', node.clan
+
+                    clan_match_p = (clan_match_p or (c == node.clan))
+
+                if debug_p:
+                    print 'DEBUG: clan_match_p = ', clan_match_p
+
+            if not jobsubstr:
+                jobsubstr_match_p = True
+            else:
+                # FIXME - need to handle jobsubstr
+                jobpat = re.compile(jobsubstr)
+                jobsubstr_match_p = False
+
+            if debug_p:
+                print '%smem_match_p = %s' % (YELLOW, mem_match_p)
+                print 'procs_match_p = %s' % (procs_match_p)
+                print 'net_match_p = %s' % (net_match_p)
+                print 'clan_match_p = %s%s' % (clan_match_p, END)
+
+            match_p = mem_match_p and procs_match_p and net_match_p and clan_match_p
+
+            occupiedcpustr = "{0}/{1}".format(node.ncpus - node.free_cpus(), node.ncpus)
+
+            nodememstr = ''
+            mempat = re.compile('mem(\d+)gb')
+            for p in node.properties:
+                mp = mempat.search(p)
+                if mp:
+                    nodememstr = ' '.join([mp.group(1), 'GiB'])
+
+            job_desc = ''
+            if totalmem:
+                vmem_tot = 0.
+                for jobid in node.unique_jobs:
+                    job = qv.jobs[jobid]
+                    if debug_p:
+                        print('FOOBAR: vmem = ', job.resources_used['vmem'])
+                        print('FOOBAR: vmem = ', convert_memory(job.resources_used['vmem'], 'GB')['qty'])
+                        print('FOOBAR: -')
+                    if job.state == 'R':
+                        vmem = 0.
+                        if 'resources_used' in job.__dict__:
+                            if job.resources_used['vmem']:
+                                vmem = convert_memory(job.resources_used['vmem'], 'GB')['qty']
+                        ncpu_this_node = 0    # no. of cpus used by this job on this node
+                        if vmem:
+                            vmem_per_cpu = vmem/float(job.ncpus)
+                            for n in job.exec_host:
+                                if node.name == n.split('/')[0]:
+                                    ncpu_this_node += 1
+                            vmem_tot += vmem_per_cpu * ncpu_this_node
+                        else:
+                            sys.stderr.write('WARNING: no vmem defined for jobid {0}\n'.format(jobid))
+                job_desc = '{vmem_tot:>6.2f} GiB'.format(vmem_tot=vmem_tot)
+            elif ids_only:
+                idlist = ','.join([jid.split('.')[0] for jid in sorted(node.unique_jobs)])
+                job_desc = '{i}'.format(i=idlist)
+            elif users:
+                ownerset = set()
+                for jobid in node.unique_jobs:
+                    ownerset.add(qv.jobs[jobid].owner)
+                ownerlist = ','.join(ownerset)
+                job_desc = '{o}'.format(o=ownerlist)
+            else:
+                for jobid in node.unique_jobs:
+                    owner = qv.jobs[jobid].owner
+                    name = qv.jobs[jobid].name
+                    if qv.jobs[jobid].state == 'R':
+                        if qv.jobs[jobid].resources_used:
+                            vmem = qv.jobs[jobid].resources_used['vmem']
+                        else:
+                            vmem = None
+                    else:
+                        vmem = None
+                    if vmem:
+                        jobinfo = 'id={id}, o={owner}, n={name}, mem={mem:>.4} {memunits}'.format(id=jobid.split('.')[0], 
+                            owner=owner, 
+                            name=name, 
+                            mem=convert_memory(vmem)['qty'], 
+                            memunits=convert_memory(vmem)['units'])
+                    else:
+                        jobinfo = 'id={id}, o={owner}, n={name}, mem=N/A'.format(id=jobid.split('.')[0], 
+                            owner=owner, 
+                            name=name)
+
+                    if not job_desc:
+                        job_desc = jobinfo
+                    else:
+                        job_desc = ''.join([job_desc, '; ', jobinfo])
+
+            color = ''
+            if node.state == 'offline':
+                color = YELLOW
+            else:
+                if match_p:
+                    color = GREEN
+                else:
+                    color = DEF
+
+            print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
+
+        last_clan = this_clan
+        first_node_p = False
+
+def print_node_line(bare, color, node, occupiedcpustr, memstr, job_desc):
+    njobs = len(node.unique_jobs)
+    njobstr = 'jobs'
+    if njobs == 1:
+        njobstr = 'job '
+    formatstr = "{color}{node.name:^10}|{node.clan:^8}|{occupiedcpustr:^7}|{memstr:^8}|{node.fabric:^5.3}|{node.state:^8.6}| {njobs} {njobstr} - {job_desc:<.90}{end}"
+
+    end = END
+
+    if bare:
+        color = ''
+        end = ''
+
+    print(formatstr.format(color=color, node=node, occupiedcpustr=occupiedcpustr, 
+        memstr=memstr, njobs=njobs, njobstr=njobstr, job_desc=job_desc, end=end))
+
+    
+
+if __name__ == '__main__':
+    usage = """usage: %prog [options]
+    Show cluster usage information like which nodes are free.  If [options] are
+    given that specify conditions, only those nodes matching those conditions
+    will be shown by default (unless -a, --all is also specified).  The default
+    is to print all nodes that are online."""
+
+    parser = OptionParser(usage)
+    parser.add_option('-m', '--mem', action='store', type='int', dest='mem',
+                      metavar='N', help='want nodes with at least N mb of total mem')
+    parser.add_option('-p', '--procs', action='store', type='int', dest='procs',
+                      metavar='N', help='want nodes with at least N procs free')
+    parser.add_option('-n', '--net', action='store', type='str', dest='net',
+                      metavar='NETWORK', help='want nodes with NETWORK type interconnect')
+    parser.add_option('-c', '--clan', action='store', type='str', dest='clan',
+                      help='want nodes belonging to clan(s) CLAN (shorthand accepted: 01=clan01, g02=grid02; this can be a comma-delimited list)')
+    parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
+                      help='print all nodes')
+    parser.add_option('-f', '--free', action='store_true', dest='free', default=False,
+                      help='print all free or matching nodes')
+    parser.add_option('-j', '--job', action='store', dest='jobsubstr', 
+                      metavar='STRING', help='search for STRING in job description [NOT YET IMPLEMENTED]')
+    parser.add_option('-b', '--bare', action='store_true', dest='bare', default=False,
+                      help='produces uncolored output')
+    parser.add_option('-t', '--totalmem', action='store_true', dest='totalmem', default=False,
+                      help='print total memory use of all jobs on node instead of summary job info. NB this may be *highly* inaccurate')
+    parser.add_option('-i', '--ids-only', action='store_true', dest='ids_only', default=False,
+                      help='print only job IDs instead of summary job info')
+    parser.add_option('-u', '--users', action='store_true', dest='users', default=False,
+                      help='print only users with jobs on the node')
+    parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False,
+                      help='turn on debug mode')
+
+    (options, args) = parser.parse_args()
+    debug_p = options.debug
+
+    main(mem=options.mem, procs=options.procs, net=options.net, 
+         clan=options.clan, all=options.all, free=options.free, 
+         jobsubstr=options.jobsubstr, bare=options.bare, 
+         totalmem=options.totalmem, ids_only=options.ids_only,
+         users=options.users)
+
