@@ -4,7 +4,9 @@ qstatviewer
 Python module and script to monitor Torque queues/jobs
 
 Requires Python 2.6 or later.
+
 Requires pbs_python -- https://oss.trac.surfsara.nl/pbs_python
+
 Probably requires distutils
 
 Tested on RHEL6
