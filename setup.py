@@ -20,6 +20,13 @@ setup(name = 'qstatviewer',
       maintainer = 'David Chin',
       maintainer_email = 'dwchin@acm.org',
       description = 'Encapsulates information about TORQUE jobs',
+      classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 2.6',
+        'Topic :: System :: Distributed Computing',
+      ],
       url = 'https://github.com/prehensilecode/qstatviewer', 
       download_url = 'https://github.com/prehensilecode/qstatviewer',
       )
