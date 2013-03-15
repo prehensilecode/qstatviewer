@@ -11,7 +11,7 @@ from distutils.core import setup
 # When building RPMs, the "license" string may have to be changed to 'GPL'
 
 setup(name = 'qstatviewer',
-      version = '0.8.5',
+      version = '0.8.6',
       packages = ['qstatviewer'],
       scripts = ['scripts/viewnodes', 'scripts/viewjobs', 'scripts/userjobs', 'scripts/users_on_node', 'scripts/jobinfo_node'],
       license = 'CC-BY-SA 3.0',
@@ -20,6 +20,13 @@ setup(name = 'qstatviewer',
       maintainer = 'David Chin',
       maintainer_email = 'dwchin@acm.org',
       description = 'Encapsulates information about TORQUE jobs',
+      classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 2.6',
+        'Topic :: System :: Distributed Computing',
+      ],
       url = 'https://github.com/prehensilecode/qstatviewer', 
       download_url = 'https://github.com/prehensilecode/qstatviewer',
       )
