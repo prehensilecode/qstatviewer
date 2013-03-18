@@ -94,11 +94,20 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, free=False,
     print "----------+--------+-------+--------+-----+--------+-----------------------------------------------------------"
 
 
+    # totals for summary
+    tot_nnode = len(sorted_nodenames)
+    tot_nnode_up = 0
+    tot_ncpus = 0
+    tot_ncpus_up = 0
+    tot_jobs = len(qv.jobs)
+
     # for inserting blank line between clans
     first_node_p = True
 
     for nodename in sorted_nodenames:
         node = qv.nodes[nodename]
+
+        tot_ncpus += node.ncpus
 
         # decide if blank line is needed
         this_clan = node.clan
@@ -116,6 +125,8 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, free=False,
 
                 print("{color}{nodename:^10.10}| is down!!{end}".format(color=color, nodename=nodename, end=end))
         else:
+            tot_nnode_up += 1
+            tot_ncpus_up += node.ncpus
 
             # properties not asked for will always "match"
             if not mem:
@@ -259,6 +270,18 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, free=False,
 
         last_clan = this_clan
         first_node_p = False
+
+    # print summary
+    sum_node_formatstr = "    Total nodes: {n:>4}    Total nodes up: {nu:>4}"
+    sum_cpus_formatstr = "    Total CPUs:  {c:>4}    Total CPUs up:  {cu:>4}"
+    sum_jobs_formatstr = "    Total jobs:  {j:>4}"
+
+    print ''
+    print 'SUMMARY'
+    print(sum_node_formatstr.format(n=tot_nnode, nu=tot_nnode_up))
+    print(sum_cpus_formatstr.format(c=tot_ncpus, cu=tot_ncpus_up))
+    print(sum_jobs_formatstr.format(j=tot_jobs))
+
 
 def print_node_line(bare, color, node, occupiedcpustr, memstr, job_desc):
     njobs = len(node.unique_jobs)
