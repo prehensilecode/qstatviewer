@@ -12,7 +12,7 @@ from optparse import OptionParser
 
 import qstatviewer
 
-def main(user=None, all=False):
+def main(user=None, all=False, group=None):
     qv = qstatviewer.QstatViewer()
 
     print('{0}:'.format(qv.pbsquery.server))
@@ -33,6 +33,9 @@ def main(user=None, all=False):
         if user:
             #print 'FOOBAR: j.owner = ', j.owner
             if j.owner == user:
+                print_this_p = True
+        elif group:
+            if j.group == group:
                 print_this_p = True
         elif all:
             print_this_p = True
@@ -66,14 +69,16 @@ if __name__ == '__main__':
     parser = OptionParser(usage)
     parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
                       help='displays all jobs')
+    parser.add_option('-g', '--group', dest='group', type='str', 
+                      help='displays jobs for users in GROUP')
     (options, args) = parser.parse_args()
 
-    if (not args) and (not options.all):
+    if not args and not options.all and not options.group:
         parser.print_help()
         sys.exit(1)
 
     if args:
-        main(user=args[0], all=options.all)
+        main(user=args[0])
     else:
-        main(user=None, all=options.all)
+        main(user=None, all=options.all, group=options.group)
 
