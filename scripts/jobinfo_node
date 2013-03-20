@@ -59,12 +59,19 @@ def main(node=None, clan=None, fabric=None, property=None):
     if property:
         propertylist = property.split(',')
 
+    
+    shortclanpat = re.compile('^\d{2}$')
+    shortgridpat = re.compile('^g(\d{2})$')
     if nodelist:
         pass
     elif clanlist:
         nodelist = []
         for clan in clanlist:
             for nodename,node in q.nodes.iteritems():
+                if shortclanpat.match(clan):
+                    clan = ''.join(['clan', clan])
+                elif shortgridpat.match(clan):
+                    clan = ''.join(['grid', shortgridpat.match(clan).group(1)])
                 if node.clan == clan:
                     nodelist.append(nodename)
     elif fabriclist:
@@ -99,7 +106,7 @@ if __name__ == '__main__':
     parser.add_option('-n', '--node', type='str', dest='node', metavar='NODE',
                       help='list job info for NODE; NODE may be a comma-separated list')
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
-                      help='list job info for all nodes in CLAN; CLAN may be a comma-separated list')
+                      help='list job info for all nodes in CLAN (e.g. clan01, grid03); CLAN may be a comma-separated list')
     parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
                       help='list job info for all nodes with network FABRIC; FABRIC may be a comma-separated list')
     parser.add_option('-p', '--property', type='str', dest='property', metavar='PROPERTY',
