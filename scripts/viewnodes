@@ -60,7 +60,7 @@ END = '\033[0m'
 
 debug_p = False
 
-def main(mem=None, procs=None, net=None, clan=None, all=False, free=False, 
+def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free=False, 
          jobsubstr=None, bare=False, totalmem=False, ids_only=False,
          users=False):
     global debug_p
@@ -111,7 +111,7 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, free=False,
 
         # decide if blank line is needed
         this_clan = node.clan
-        if not first_node_p and (this_clan != last_clan):
+        if not first_node_p and (this_clan != last_clan) and not short:
             print('')
 
         if node.state == 'down':
@@ -266,7 +266,11 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, free=False,
                 else:
                     color = DEF
 
-            print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
+            if not short:
+                print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
+            else:
+                if match_p:
+                    print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
 
         last_clan = this_clan
         first_node_p = False
@@ -319,6 +323,8 @@ if __name__ == '__main__':
                       help='want nodes belonging to clan(s) CLAN (shorthand accepted: 01=clan01, g02=grid02; this can be a comma-delimited list)')
     parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
                       help='print all nodes')
+    parser.add_option('-s', '--short', action='store_true', dest='short', default=False,
+                      help='print only matching nodes')
     parser.add_option('-f', '--free', action='store_true', dest='free', default=False,
                       help='print all free or matching nodes')
     parser.add_option('-j', '--job', action='store', dest='jobsubstr', 
@@ -337,9 +343,16 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     debug_p = options.debug
 
-    main(mem=options.mem, procs=options.procs, net=options.net, 
-         clan=options.clan, all=options.all, free=options.free, 
-         jobsubstr=options.jobsubstr, bare=options.bare, 
-         totalmem=options.totalmem, ids_only=options.ids_only,
+    main(mem=options.mem, 
+         procs=options.procs, 
+         net=options.net, 
+         clan=options.clan, 
+         all=options.all, 
+         short=options.short, 
+         free=options.free, 
+         jobsubstr=options.jobsubstr, 
+         bare=options.bare, 
+         totalmem=options.totalmem, 
+         ids_only=options.ids_only,
          users=options.users)
 
