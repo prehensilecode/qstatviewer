@@ -14,16 +14,29 @@ import qstatviewer
 
 def jobs_on_nodes(qv):
     print('{0}:'.format(qv.pbsquery.server))
-    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} NODES ".format(j="JOB ID", u="USERNAME", 
-        g="GROUP", q="QUEUE", jn="JOBNAME"));
+    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {f:^5.3} NODES ".format(j="JOB ID", u="USERNAME", 
+        g="GROUP", q="QUEUE", jn="JOBNAME", f="NET"));
     print("-----------------------------------------------------------------------------------------------------------------")
-    formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24}"
+    formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {fab:^5.3}"
     tmpset = set()
     for id in sorted(qv.jobs.keys()):
         job = qv.jobs[id]
         if job.job_state == 'R':
             #print "{0:<11.11}".format(id.split('.')[0]), "{0:>8.8}".format(job.owner), "{0:>13.13}".format(job.egroup), 
-            print formatstr.format(ji=id.split('.')[0], job=job),
+            nhosts = len(job.hosts)
+            hostlist = list(job.hosts)
+            if nhosts == 1:
+                fabric = qv.nodes[hostlist[0]].fabric
+            else:
+                fabric = qv.nodes[hostlist[0]].fabric
+                for n in range(1,nhosts):
+                    curfabric = qv.nodes[hostlist[n]].fabric
+                    if curfabric != fabric:
+                        fabric = 'mix'
+                        break
+                    else:
+                        continue
+            print formatstr.format(ji=id.split('.')[0], fab=fabric, job=job),
             for h in sorted(job.exec_host):
                 tmpset.add(h.split('/')[0])
             for h in tmpset:
@@ -42,9 +55,9 @@ def main(user=None, all=False, group=None, state=None, nodes=False):
         jobs_on_nodes(qv)
     else:
         print('{0}:'.format(qv.pbsquery.server))
-        print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
-            g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
-        print("-------------------------------------------------------------------------------------------------------------------------------------")
+        print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
+            g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
+        print("------------------------------------------------------------------------------------------------------------------------------------------")
     
         print_this_p = False
 
@@ -82,15 +95,33 @@ def main(user=None, all=False, group=None, state=None, nodes=False):
                     #print 'FOOBAR:      ', j.resources_used
                     #print ''
                     elapse = 'n/a'
+                    fabric = 'n/a'
                 if j.resources_used:
                     elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
+                    nhosts = len(j.hosts)
+                    hostlist = list(j.hosts)
+                    if nhosts == 1:
+                        fabric = qv.nodes[hostlist[0]].fabric
+                    else:
+                        fabric = qv.nodes[hostlist[0]].fabric
+                        for n in range(1,nhosts):
+                            curfabric = qv.nodes[hostlist[n]].fabric
+                            if curfabric != fabric:
+                                print 'FOOBAR: curfabric = ', curfabric
+                                print 'FOOBAR:    fabric = ', fabric
+                                fabric = 'mix'
+                                break
+                            else:
+                                continue
+                        
             else:
                 elapse = 'n/a'
+                fabric = 'n/a'
 
-            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
 
             if print_this_p:
-                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
+                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
                 print_this_p = False
 
 if __name__ == '__main__':
