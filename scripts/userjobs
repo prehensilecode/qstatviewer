@@ -19,6 +19,17 @@ total_cput_usage = datetime.timedelta()
 total_mem_usage = 0.
 n_running = 0
 
+def print_cluster_summary(q):
+    nnodes = 0
+    ncpus  = 0
+    for nodename,node in q.nodes.iteritems():
+        if (not node.state == 'down') or (not node.state == 'offline'):
+            nnodes += 1
+            ncpus += node.ncpus
+
+    print("Total available nodes: {nnodes:>3}    No. of CPUs: {ncpus:4}".format(nnodes=nnodes, ncpus=ncpus))
+    
+
 def print_jobinfo(q, jobids, uorg):
     # takes 
     # - q = qv.QstatViewer 
@@ -126,6 +137,7 @@ def print_jobinfo(q, jobids, uorg):
     print("    Total no. of CPUs occupied = {n}".format(n=total_ncpus_used))
     print("       Total CPU time consumed = {c}".format(c=total_cput_usage))
     print("")
+    print_cluster_summary(q)
 
     # reset accumulators
     total_ncpus_used = 0
