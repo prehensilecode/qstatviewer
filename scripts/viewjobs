@@ -118,7 +118,7 @@ def main(user=None, all=False, group=None, state=None, nodes=False):
                 elapse = 'n/a'
                 fabric = 'n/a'
 
-            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
 
             if print_this_p:
                 print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
