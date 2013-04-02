@@ -14,10 +14,10 @@ import qstatviewer
 
 def jobs_on_nodes(qv):
     print('{0}:'.format(qv.pbsquery.server))
-    print("{j:<8} {u:<8} {g:>13} {jn:^24} NODES ".format(j="JOB ID", u="USERNAME", 
-        g="GROUP", jn="JOBNAME"));
+    print("{j:<8} {u:<8} {g:>13} {q:<8} {jn:^24} NODES ".format(j="JOB ID", u="USERNAME", 
+        g="GROUP", q="QUEUE", jn="JOBNAME"));
     print("-----------------------------------------------------------------------------------------------------------------")
-    formatstr = "{ji:<8} {job.owner:<8.8} {job.group:>13.13} {job.name:^24.24}"
+    formatstr = "{ji:<8} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24}"
     tmpset = set()
     for id in sorted(qv.jobs.keys()):
         job = qv.jobs[id]
