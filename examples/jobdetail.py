@@ -11,9 +11,23 @@ from optparse import OptionParser
 def print_job_detail(q, jobid):
     jobid = '.'.join([jobid, q.servername])
 
+    headnode_dict = {'bc103bl05.deac.wfu.edu': 'rhel6head1',
+                     'bc103bl06.deac.wfu.edu': 'rhel6head2',
+                     'bc103bl09.deac.wfu.edu': 'rhel6head3'}
+
     print("{0}:".format(jobid.split('.')[0]))
-    for k,v in q.jobs[jobid].__dict__.iteritems():
-        print("    {0:17.17}\t\t{1}".format(k, v))
+    job = q.jobs[jobid]
+    #for k,v in job.__dict__.iteritems():
+    #    print("    {0:17.17}\t\t{1}".format(k, v))
+    print "    Owner:", job.owner
+    print "    Group:", job.group_list[0]
+    print "    Owner node:", headnode_dict[job.owner_node]
+    print "    Resource list:", job.resource_list
+    print "    State:", job.state
+    if job.state == 'R':
+        print "    Resources used:", job.resources_used
+        hostlist = ' '.join(list(job.hosts))
+        print "    Hosts:", hostlist
     print("\n")
 
 
