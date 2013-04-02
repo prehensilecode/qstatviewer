@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Author: David Chin <dwchin . acm.org>
+# Author: David Chin <dwchin@acm.org>
 
 """Build/install script for qstatviewer. 
 See INSTALL for installation instructions.
@@ -14,7 +14,7 @@ setup(name = 'qstatviewer',
       version = '0.8.7',
       packages = ['qstatviewer'],
       scripts = ['scripts/viewnodes', 'scripts/viewjobs', 'scripts/userjobs', 'scripts/users_on_node', 'scripts/jobinfo_node'],
-      license = 'CC-BY-SA 3.0',
+      license = 'Copyright 2013 Wake Forest University',
       author = 'David Chin',
       author_email = 'dwchin@acm.org',
       maintainer = 'David Chin',
