@@ -12,10 +12,10 @@ import qstatviewer as qv
 from optparse import OptionParser
 
 def output_stuff(nodelist):
-    for node in nodelist:
-        unique_jobs = q.nodes[node].unique_jobs
-        print('     NODE   JOB IDS')
-        print('=========   =======')
+    print('     NODE   JOB IDS')
+    print('=========   =======')
+    for node in sorted(nodelist):
+        unique_jobs = sorted(q.nodes[node].unique_jobs)
         jobstr = ''
         for jobid in unique_jobs:
             if q.jobs[jobid].state == 'R':
@@ -23,20 +23,21 @@ def output_stuff(nodelist):
         print('{n:>9.9} : {j}'.format(n=q.nodes[node].name, j=jobstr))
         print('')
 
-        formatstr = "{space:>8}{ji:>11} {o:<8} {n:>4} {vm:>10} {wt:>17}"
-        print(formatstr.format(space='', ji='JOBID', o='USERNAME', n='NCPU', vm='MEM USED', wt='WALLTIME'))
-        for jobid in unique_jobs:
-            job = q.jobs[jobid]
-            if job.state == 'R':
-                ji = jobid.split('.')[0]
+        if unique_jobs:
+            formatstr = "{space:>16}{ji:>11} {o:<8} {n:>4} {vm:>10} {wt:>17}"
+            print(formatstr.format(space='', ji='JOBID', o='USERNAME', n='NCPU', vm='MEM USED', wt='WALLTIME'))
+            for jobid in unique_jobs:
+                job = q.jobs[jobid]
+                if job.state == 'R':
+                    ji = jobid.split('.')[0]
 
-                walltime = [int(t) for t in job.resources_used['walltime'].split(':')]
-                wt = datetime.timedelta(hours=walltime[0], minutes=walltime[1], seconds=walltime[2])
+                    walltime = [int(t) for t in job.resources_used['walltime'].split(':')]
+                    wt = datetime.timedelta(hours=walltime[0], minutes=walltime[1], seconds=walltime[2])
 
-                vm = qv.convert_memory(job.resources_used['vmem'])
-                vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
+                    vm = qv.convert_memory(job.resources_used['vmem'])
+                    vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
 
-                print(formatstr.format(space='', ji=ji, o=job.owner, n=job.ncpus, vm=vmstr, wt=wt))
+                    print(formatstr.format(space='', ji=ji, o=job.owner, n=job.ncpus, vm=vmstr, wt=wt))
         print('')
 
 def main(node=None, clan=None, fabric=None, property=None):
@@ -59,7 +60,6 @@ def main(node=None, clan=None, fabric=None, property=None):
     if property:
         propertylist = property.split(',')
 
-    
     shortclanpat = re.compile('^\d{2}$')
     shortgridpat = re.compile('^g(\d{2})$')
     if nodelist:
