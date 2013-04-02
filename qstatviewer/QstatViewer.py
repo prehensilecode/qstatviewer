@@ -37,6 +37,9 @@ class QstatViewer:
 
         self.pbsquery = PBSQuery(pbs_server)
 
+        self.servername = self.pbsquery.get_server_name()
+        self.serverinfo = self.pbsquery.get_serverinfo()
+
         self.__make_jobs()
         self.__make_nodes()
 
