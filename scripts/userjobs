@@ -45,6 +45,7 @@ def print_jobinfo(q, jobids, uorg):
     n_running = 0
     formatstr = "      {k:>9}: {v:>20}"
     run_formatstr = "      {k:>9}: {v:>20}      {k:>9}: {v2:>20}"
+    run2_formatstr = "      {k:>9}: {v:>20}      {k2:>9}: {v2:>20}"
     for jobid in jobids:
         print("{0}:".format(jobid.split('.')[0]))
         print("           User: {0}".format(userjobs[jobid].owner))
@@ -84,7 +85,7 @@ def print_jobinfo(q, jobids, uorg):
             k2 = 'vmem'
             vmem = qv.convert_memory(ru[k2])
             v2 = "{q:<.2f} {u:3}".format(q=vmem['qty'], u=vmem['units'])
-            print(run_formatstr.format(k=k, v=v, v2=v2))
+            print(run2_formatstr.format(k=k, k2=k2, v=v, v2=v2))
 
             k = 'cput'
             (h,m,s) = rl[k].split(':')
