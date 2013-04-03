@@ -132,7 +132,7 @@ if __name__ == '__main__':
     parser.add_option('-g', '--group', dest='group', type='str', 
                       help='displays jobs for users in GROUP')
     parser.add_option('-s', '--state', dest='state', type='str',
-                      help='displays jobs with state STATE')
+                      help='displays jobs with state STATE (q = queued, r = running, e = exiting)')
     parser.add_option('-n', '--nodes', action='store_true', dest='nodes', 
                       default=False, help='displays nodes occupied by job')
     (options, args) = parser.parse_args()
