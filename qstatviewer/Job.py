@@ -208,6 +208,12 @@ class Job:
         else:
             self.start_count = None
 
+        # 'x' is usually the nodeset spec
+        if 'x' in pbsjobs_dict:
+            self.extra = pbsjobs_dict['x'][0]
+        else:
+            self.extra = None
+
 
     def __count_ncpus(self):
         ncpus = 0
