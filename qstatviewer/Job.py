@@ -146,6 +146,11 @@ class Job:
         else:
             self.session_id = None
 
+        # remaining walltime
+        self.walltime_remaining = 0
+        if 'Walltime' in pbsjobs_dict:
+            self.walltime_remaining = int(pbsjobs_dict['Walltime']['Remaining'][0])
+
         ###
         ### These properties are available only to admin user:
         ###
