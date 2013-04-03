@@ -102,6 +102,10 @@ def print_jobinfo(q, jobids, uorg):
             v2 = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
             print(run_formatstr.format(k=k, v=v, v2=v2))
 
+            print ""
+            walltime_remaining = datetime.timedelta(seconds=userjobs[jobid].walltime_remaining) 
+            print "    Walltime remaining (est.):", walltime_remaining
+
         else:
             k = 'ncpus'
             v = rl[k]
