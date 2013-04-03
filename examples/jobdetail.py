@@ -8,7 +8,7 @@ import time
 import qstatviewer as qv
 from optparse import OptionParser
 
-def print_job_detail(q, jobid):
+def print_job_detail(q, jobid, options):
     jobid = '.'.join([jobid, q.servername])
 
     headnode_dict = {'bc103bl05.deac.wfu.edu': 'rhel6head1',
@@ -28,19 +28,22 @@ def print_job_detail(q, jobid):
         print "    Resources used:", job.resources_used
         hostlist = ' '.join(list(job.hosts))
         print "    Hosts:", hostlist
+        print "    Walltime remaining:", datetime.timedelta(seconds=job.walltime_remaining)
     print("\n")
 
 
-def main(q, jobid_list):
+def main(q, jobid_list, options):
     jobid_list.sort()
 
     for jobid in jobid_list:
-        print_job_detail(q, jobid)
+        print_job_detail(q, jobid, options)
 
 
 if __name__ == '__main__':
     usage = "usage: %prog jobid [jobid ...]"
     parser = OptionParser(usage)
+    parser.add_option('-s', '--short', action='store_true',
+                      default=False, help='short output')
 
     (options, args) = parser.parse_args()
 
@@ -50,5 +53,5 @@ if __name__ == '__main__':
 
     q = qv.QstatViewer()
 
-    main(q, args)
+    main(q, args, options)
 
