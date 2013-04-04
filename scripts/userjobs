@@ -14,6 +14,7 @@ from optparse import OptionParser
 import qstatviewer as qv
 
 total_ncpus_used = 0
+total_nodes_used = 0
 total_cput_usage = datetime.timedelta()
 total_mem_usage = 0.
 n_running = 0
@@ -35,6 +36,7 @@ def print_jobinfo(q, jobids, uorg):
     # - jobids = list of job ids
     # - uorg = username or groupname
     global total_ncpus_used
+    global total_nodes_used
     global total_cput_usage
     global total_mem_usage
     global n_running
@@ -60,6 +62,8 @@ def print_jobinfo(q, jobids, uorg):
             n_running += 1
             ncpus = rl['ncpus']
             total_ncpus_used += ncpus
+
+            total_nodes_used += len(userjobs[jobid].hosts)
 
             k = 'ncpus'
             v = rl[k]
@@ -138,8 +142,9 @@ def print_jobinfo(q, jobids, uorg):
         print("")
 
     print("Summary of {u}'s jobs: {n:>5d} running, {q:>5d} queued".format(u=uorg, n=n_running, q=(len(jobids)-n_running)))
-    print("    Total no. of CPUs occupied = {n}".format(n=total_ncpus_used))
-    print("       Total CPU time consumed = {c}".format(c=total_cput_usage))
+    print("    Total no. of nodes occupied = {n}".format(n=total_nodes_used))
+    print("     Total no. of CPUs occupied = {n}".format(n=total_ncpus_used))
+    print("        Total CPU time consumed = {c}".format(c=total_cput_usage))
     print("")
     print_cluster_summary(q)
 

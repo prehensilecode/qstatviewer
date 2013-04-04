@@ -143,6 +143,11 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
             if not net:
                 net_match_p = True
             else:
+                if net == 'eth':
+                    net = 'ethernet'
+                elif net == 'inf':
+                    net = 'infiniband'
+                    
                 net_match_p = (net == node.fabric)
 
             if not clan:
@@ -319,7 +324,7 @@ if __name__ == '__main__':
     parser.add_option('-p', '--procs', action='store', type='int', dest='procs',
                       metavar='N', help='want nodes with at least N procs free')
     parser.add_option('-n', '--net', action='store', type='str', dest='net',
-                      metavar='NETWORK', help='want nodes with NETWORK type interconnect')
+                      metavar='NETWORK', help='want nodes with NETWORK type interconnect (abbreviations "eth" and "inf" acceptable)')
     parser.add_option('-c', '--clan', action='store', type='str', dest='clan',
                       help='want nodes belonging to clan(s) CLAN (shorthand accepted: 01=clan01, g02=grid02; this can be a comma-delimited list)')
     parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
