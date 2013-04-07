@@ -16,6 +16,7 @@ import re
 
 import qstatviewer
 from qstatviewer import convert_memory
+from qstatviewer import timedeltastr
 
 from optparse import OptionParser
 
@@ -248,11 +249,17 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                     else:
                         vmem = None
                     if vmem:
-                        jobinfo = 'id={id}, o={owner}, n={name}, mem={mem:>.4} {memunits}'.format(id=jobid.split('.')[0], 
+                        #jobinfo = 'id={id}, o={owner}, n={name}, mem={mem:>.4} {memunits}'.format(id=jobid.split('.')[0], 
+                        #    owner=owner, 
+                        #    name=name, 
+                        #    mem=convert_memory(vmem)['qty'], 
+                        #    memunits=convert_memory(vmem)['units'])
+                        jobinfo = 'id={id}, o={owner}, n_nodes={n_nodes}, mem={mem:>.4} {memunits}, wt={wt}'.format(id=jobid.split('.')[0], 
                             owner=owner, 
-                            name=name, 
+                            n_nodes=len(qv.jobs[jobid].hosts),
                             mem=convert_memory(vmem)['qty'], 
-                            memunits=convert_memory(vmem)['units'])
+                            memunits=convert_memory(vmem)['units'],
+                            wt=timedeltastr(qv.jobs[jobid].resource_list['walltime']))
                     else:
                         jobinfo = 'id={id}, o={owner}, n={name}, mem=N/A'.format(id=jobid.split('.')[0], 
                             owner=owner, 
