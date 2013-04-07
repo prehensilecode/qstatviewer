@@ -15,9 +15,12 @@ q = qv.QstatViewer()
 print("There are {0} jobs".format(len(q.jobs)))
 print("")
 
+<<<<<<< HEAD
 for jobid,job in sorted(q.jobs.iteritems()):
+=======
+for jobid, job in q.jobs.iteritems():
+>>>>>>> Reformat example scripts to PEP8
     print("{0}:".format(jobid.split('.')[0]))
-    for k,v in job.__dict__.iteritems():
+    for k, v in job.__dict__.iteritems():
         print("    {0:17.17}\t\t{1}".format(k, v))
     print("\n")
-

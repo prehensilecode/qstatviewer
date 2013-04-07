@@ -23,14 +23,15 @@ print("There are {0} nodes".format(len(q.nodes)))
 print("")
 
 if options.short:
-    for nodename,node in sorted(q.nodes.iteritems()):
+    for nodename, node in sorted(q.nodes.iteritems()):
         print("{0}:".format(nodename))
         print "    Properties:", node.properties
         print "    NCPUS:", node.ncpus
 else:
-    for nodename,node in sorted(q.nodes.iteritems()):
+    for nodename, node in sorted(q.nodes.iteritems()):
         print("{0}:".format(nodename))
         for k,v in node.__dict__.iteritems():
             print("    {0:10.10}\t\t{1}".format(k, v))
         print("\n")
+
 
