@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Misc. functions and global objects for qstatviewer
+"""
 
 # Author: David Chin <dwchin@acm.org>
 

@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+Encapsulates information about Torque queue and resources. Wraps
+around PBSQuery class, and expands its nested lists to be more
+easily useable.
+"""
 
 # Author: David Chin <dwchin@acm.org>
 

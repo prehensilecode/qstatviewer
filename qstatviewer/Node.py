@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Encapsulates information about Torque nodes
+"""
 
 # Author: David Chin <dwchin@acm.org>
 

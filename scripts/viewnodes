@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""Print out information on nodes in the cluster"""
+"""
+Print out information on nodes in the cluster
+"""
 
 # Author: David Chin <dwchin@acm.org>
 

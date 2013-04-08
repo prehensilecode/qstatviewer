@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""Print out given user's jobs in a QstatViewer instance"""
+"""
+Print out given user's jobs in a QstatViewer instance
+"""
 
 # Author: David Chin <dwchin@acm.org>
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Prints out information on jobs on nodes matching given criteria
+"""
 
 # Author: David Chin <dwchin@acm.org>
 
