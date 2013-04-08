@@ -52,6 +52,11 @@ def print_job_detail(q, jobid, options):
                 print "         Not yet available"
             hostlist = ' '.join(list(job.hosts))
             print "    Hosts:", hostlist
+            fabricset = set()
+            for h in job.hosts:
+                fabricset.add(q.nodes[h].fabric)
+            fabriclist = ','.join(fabricset)
+            print "    Network:", fabriclist
             print "    Walltime remaining:", datetime.timedelta(seconds=job.walltime_remaining)
     else:
         print "No such job id:", jobid
