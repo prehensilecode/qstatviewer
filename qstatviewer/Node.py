@@ -4,7 +4,6 @@ Encapsulates information about Torque nodes
 """
 
 # Author: David Chin <dwchin@acm.org>
-
 # Copyright 2013 Wake Forest University
 
 import sys, os, re, string, copy

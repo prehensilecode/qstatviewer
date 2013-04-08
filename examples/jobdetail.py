@@ -80,8 +80,8 @@ def main(q, jobid_list, options):
 if __name__ == '__main__':
     usage = "usage: %prog jobid [jobid ...]"
     parser = OptionParser(usage)
-    parser.add_option('-s', '--short', action='store_true',
-                      default=False, help='short output')
+    parser.add_option('-l', '--long', action='store_true', dest='long',
+                      default=False, help='long output')
 
     (options, args) = parser.parse_args()
 

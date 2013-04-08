@@ -4,7 +4,6 @@ Encapsulates information about Torque jobs
 """
 
 # Author: David Chin <dwchin@acm.org>
-
 # Copyright 2013 Wake Forest University
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Author: David Chin <dwchin@acm.org>
+# Copyright 2013 Wake Forest University
 
 """Build/install script for qstatviewer. 
 See INSTALL for installation instructions.

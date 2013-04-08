@@ -4,7 +4,6 @@ Misc. functions and global objects for qstatviewer
 """
 
 # Author: David Chin <dwchin@acm.org>
-
 # Copyright 2013 Wake Forest University
 
 import re, datetime

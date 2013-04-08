@@ -2,9 +2,8 @@
 """Emulates output of 'qstat -a'"""
 
 # Author: David Chin <dwchin . acm.org>
+# Copyright 2013 Wake Forest University
 
-# qstatviewer by David Chin is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
-# http://creativecommons.org/licenses/by-sa/3.0/deed.en_US
 
 import sys, os, re, datetime
 from qstatviewer import *
