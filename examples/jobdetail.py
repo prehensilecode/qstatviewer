@@ -1,5 +1,11 @@
 #!/usr/bin/env python
+"""
+Prints details about given job
+"""
+
 # Author: David Chin <dwchin . acm.org>
+
+# Copyright 2013 Wake Forest University
 
 import sys
 import os
