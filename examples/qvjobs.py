@@ -17,5 +17,5 @@ print("")
 for jobid, job in q.jobs.iteritems():
     print("{0}:".format(jobid.split('.')[0]))
     for k, v in job.__dict__.iteritems():
-        print("    {0:17.17}\t\t{1}".format(k, v))
+        print("    {0:18.18}\t\t{1}".format(k, v))
     print("\n")

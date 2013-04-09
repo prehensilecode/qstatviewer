@@ -8,7 +8,7 @@ Misc. functions and global objects for qstatviewer
 
 import re, datetime
 
-__version__ = '0.8.8'
+__version__ = '0.8.9'
 
 jobstate_dict = {
     'Q': 'Queued', 

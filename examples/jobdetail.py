@@ -24,11 +24,17 @@ def print_job_detail(q, jobid, options):
     if jobid in q.jobs:
         print("{0}:".format(jobid.split('.')[0]))
         job = q.jobs[jobid]
-        #for k,v in job.__dict__.iteritems():
-        #    print("    {0:17.17}\t\t{1}".format(k, v))
+        print "    Name:", job.name
         print "    Owner:", job.owner
         print "    Group:", job.group_list[0]
         print "    Owner node:", headnode_dict[job.owner_node]
+        print "    Mail users:", job.mail_users
+        if options.long:
+            # euser and egroup are accessible to admin users only
+            if job.euser:
+                print "    Euser:", job.euser
+                print "    Egroup:", job.egroup
+        print "    State:", qv.jobstate_dict[job.state]
         print "    Resources requested:"
         #for k,v in job.resource_list.iteritems():
         #    print "        ", k, v
@@ -42,7 +48,6 @@ def print_job_detail(q, jobid, options):
         print "         Walltime:    ", qv.timedeltastr(job.resource_list['walltime'])
         if job.extra:
             print "         X:           ", job.extra
-        print "    State:", qv.jobstate_dict[job.state]
         if job.state == 'R':
             print "    Resources used:" 
             #for k,v in job.resources_used.iteritems():
@@ -64,6 +69,35 @@ def print_job_detail(q, jobid, options):
             fabriclist = ','.join(fabricset)
             print "    Network:", fabriclist
             print "    Walltime remaining:", datetime.timedelta(seconds=job.walltime_remaining)
+            if options.long:
+                print "    Submit host:", job.submit_host
+                print "    Submit args:", job.submit_args
+                if job.hashname:
+                    print "    Hash name:", job.hashname
+                print "    Working dir:", job.init_work_dir
+                print "    Output path:", job.output_path
+                if len(job.variable_list):
+                    print "    Variable list:"
+                    for k,v in job.variable_list.iteritems():
+                        #print "       ", k, ":", v[0]
+                        print "        {k:<13}: {v}".format(k=k, v=v[0])
+                print "    Error path:", job.error_path
+                print "    Session ID:", job.session_id
+                if job.substate:
+                    print "    Substate:", job.substate
+                if job.queue_rank:
+                    print "    Queue rank:", job.queue_rank
+                print "    Rerunnable:", job.rerunnable
+                print "    Fault-tolerant:", job.fault_tolerant
+                print "    Join path:", job.join_path
+                print "    Keep files:", job.keep_files
+                print "    Mail points:", job.mail_points
+                print "    Exec host:", job.exec_host
+                print "    Ctime:", job.ctime
+                print "    Etime:", job.etime
+                print "    Qtime:", job.qtime
+                print "    Mtime:", job.mtime
+                print "    Start time:", job.start_time
     else:
         print "No such job id:", jobid
         sys.exit(1)

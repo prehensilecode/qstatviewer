@@ -8,6 +8,7 @@ Encapsulates information about Torque jobs
 
 
 import sys, os, re, string, copy
+import datetime
 import pickle
 
 from PBSQuery import PBSQuery
@@ -59,9 +60,11 @@ class Job:
         self.server = pbsjobs_dict['server'][0]
         self.checkpoint = pbsjobs_dict['Checkpoint'][0]
 
-        self.ctime = pbsjobs_dict['ctime'][0]
+        self.ctime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['ctime'][0]))
 
         self.error_path = pbsjobs_dict['Error_Path'][0]
+
+        self.init_work_dir = pbsjobs_dict['init_work_dir'][0]
 
         if 'exec_host' in pbsjobs_dict:
             self.exec_host = pbsjobs_dict['exec_host'][0].split('+')
@@ -100,12 +103,12 @@ class Job:
         else:
             self.mail_users = None
 
-        self.mtime = pbsjobs_dict['mtime'][0]
+        self.mtime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['mtime'][0]))
 
         self.output_path = pbsjobs_dict['Output_Path'][0]
         self.priority = int(pbsjobs_dict['Priority'][0])
 
-        self.qtime = pbsjobs_dict['qtime'][0]
+        self.qtime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['qtime'][0]))
 
         
         # Yes, it's misspelled
@@ -162,7 +165,7 @@ class Job:
         if 'Variable_List' in pbsjobs_dict:
             self.variable_list = pbsjobs_dict['Variable_List']
         else:
-            self.variable_list = []
+            self.variable_list = None
 
         if 'euser' in pbsjobs_dict:
             self.euser = pbsjobs_dict['euser'][0]
@@ -191,17 +194,17 @@ class Job:
 
         ### End admin properties
 
-        self.etime = pbsjobs_dict['etime'][0]
+        self.etime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['etime'][0]))
 
         if 'exit_status' in pbsjobs_dict:
             self.exit_status = int(pbsjobs_dict['exit_status'][0])
         else:
             self.exit_status = None
 
-        self.submit_args = pbsjobs_dict['submit_args']
+        self.submit_args = pbsjobs_dict['submit_args'][0]
         
         if 'start_time' in pbsjobs_dict:
-            self.start_time = pbsjobs_dict['start_time'][0]
+            self.start_time = datetime.datetime.fromtimestamp(int(pbsjobs_dict['start_time'][0]))
         else:
             self.start_time = None
 
@@ -209,6 +212,19 @@ class Job:
             self.start_count = int(pbsjobs_dict['start_count'][0])
         else:
             self.start_count = None
+
+        if 'fault_tolerant' in pbsjobs_dict:
+            if pbsjobs_dict['fault_tolerant'][0] == 'True':
+                self.fault_tolerant = True
+            else:
+                self.fault_tolerant = False
+        else:
+            self.fault_tolerant = None
+
+        if 'submit_host' in pbsjobs_dict:
+            self.submit_host = pbsjobs_dict['submit_host'][0]
+        else:
+            self.submit_host = None
 
         # 'x' is usually the nodeset spec
         if 'x' in pbsjobs_dict:

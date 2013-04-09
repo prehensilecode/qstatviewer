@@ -12,7 +12,7 @@ from distutils.core import setup
 # When building RPMs, the "license" string may have to be changed to 'GPL'
 
 setup(name = 'qstatviewer',
-      version = '0.8.8',
+      version = '0.8.9',
       packages = ['qstatviewer'],
       scripts = ['scripts/viewnodes', 'scripts/viewjobs', 'scripts/userjobs', 'scripts/users_on_node', 'scripts/jobinfo_node'],
       license = 'Copyright 2013 Wake Forest University',
