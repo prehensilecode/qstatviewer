@@ -101,8 +101,10 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
     # totals for summary
     tot_nnode = len(sorted_nodenames)
     tot_nnode_up = 0
+    tot_nnode_online = 0
     tot_ncpus = 0
     tot_ncpus_up = 0
+    tot_ncpus_online = 0
     tot_jobs = len(qv.jobs)
 
     # for inserting blank line between clans
@@ -131,6 +133,10 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
         else:
             tot_nnode_up += 1
             tot_ncpus_up += node.ncpus
+
+            if not node.state == 'offline':
+                tot_nnode_online += 1
+                tot_ncpus_online += node.ncpus
 
             # properties not asked for will always "match"
             if not mem:
@@ -291,14 +297,14 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
         first_node_p = False
 
     # print summary
-    sum_node_formatstr = "    Total nodes: {n:>4}    Total nodes up: {nu:>4}"
-    sum_cpus_formatstr = "    Total CPUs:  {c:>4}    Total CPUs up:  {cu:>4}"
+    sum_node_formatstr = "    Total nodes: {n:>4}    Total nodes up: {nu:>4}    Total nodes online: {no:>4}"
+    sum_cpus_formatstr = "    Total CPUs:  {c:>4}    Total CPUs up:  {cu:>4}    Total CPUs online:  {co:>4}"
     sum_jobs_formatstr = "    Total jobs:  {j:>4}"
 
     print ''
     print 'SUMMARY'
-    print(sum_node_formatstr.format(n=tot_nnode, nu=tot_nnode_up))
-    print(sum_cpus_formatstr.format(c=tot_ncpus, cu=tot_ncpus_up))
+    print(sum_node_formatstr.format(n=tot_nnode, nu=tot_nnode_up, no=tot_nnode_online))
+    print(sum_cpus_formatstr.format(c=tot_ncpus, cu=tot_ncpus_up, co=tot_ncpus_online))
     print(sum_jobs_formatstr.format(j=tot_jobs))
 
 
