@@ -73,6 +73,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None):
     ncpus_req = []
     mem_req = []
     walltimes_req = []
+    longest_walltime = datetime.timedelta(seconds=0)
 
     print('{0}:'.format(qv.pbsquery.server))
     print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
@@ -94,9 +95,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None):
 
         mem_req.append(mem)
 
-        t = [int(i) for i in j.resource_list['walltime'].split(':')]
-        td = datetime.timedelta(hours=t[0], minutes=t[1], seconds=t[2])
-        walltimes_req.append(td)
+        walltimes_req.append(j.resource_list['walltime'])
 
         if user:
             #print 'FOOBAR: j.owner = ', j.owner
@@ -127,6 +126,9 @@ def viewjobs(qv, user=None, all=False, group=None, state=None):
                 elapse = 'n/a'
                 fabric = 'n/a'
             if j.resources_used:
+                cur_wt = j.resources_used['walltime']
+                if cur_wt > longest_walltime:
+                    longest_walltime = cur_wt
                 elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
                 nhosts = len(j.hosts)
                 hostlist = list(j.hosts)
@@ -161,6 +163,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None):
     print("No. of jobs running: {nr:>4d}".format(nr=n_jobs_running))
     print(" No. of jobs queued: {nq:>4d}".format(nq=n_jobs_queued))
     print("  Total no. of jobs: {nt:>4d}".format(nt=(n_jobs_running + n_jobs_queued)))
+    print("Longest running job: {t:>17}".format(t=longest_walltime))
 
     print("")
 

@@ -33,8 +33,7 @@ def output_stuff(nodelist):
                 if job.state == 'R':
                     ji = jobid.split('.')[0]
 
-                    walltime = [int(t) for t in job.resources_used['walltime'].split(':')]
-                    wt = datetime.timedelta(hours=walltime[0], minutes=walltime[1], seconds=walltime[2])
+                    wt = job.resources_used['walltime']
 
                     vm = qv.convert_memory(job.resources_used['vmem'])
                     vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
@@ -93,14 +92,6 @@ def main(node=None, clan=None, fabric=None, property=None):
         sys.exit(1)
 
     output_stuff(nodelist)
-
-    #sorted_nodenames = sorted(q.nodes.keys())
-    #for nodename in sorted_nodenames:
-    #    node = q.nodes[nodename]
-    #    jobstr = ' '.join(sorted(set([j.split('.')[0] for j in node.unique_jobs])))
-    #    if not jobstr:
-    #        jobstr = ''
-    #    print("{0:>9.9} : {1}".format(nodename, jobstr))
 
 
 if __name__ == '__main__':

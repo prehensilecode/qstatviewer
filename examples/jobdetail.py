@@ -41,9 +41,9 @@ def print_job_detail(q, jobid, options):
         print "         Nodes:       ", job.resource_list['nodes']
         print "         No. of nodes:", job.resource_list['nodect']
         mem = qv.convert_memory(job.resource_list['mem'])
-        print "         Mem:          {0:>6.2f} {1:3}".format(mem['qty'], mem['units'])
+        print "         Mem:          {qty:>6.2f} {units:3}".format(qty=mem['qty'], units=mem['units'])
         pmem = qv.convert_memory(job.resource_list['pmem'])
-        print "         P.Mem:        {0:>6.2f} {1:3}".format(pmem['qty'], pmem['units'])
+        print "         P.Mem:        {qty:>6.2f} {units:3}".format(qty=pmem['qty'], units=pmem['units'])
         print "         CPU time:    ", qv.timedeltastr(job.resource_list['cput'])
         print "         Walltime:    ", qv.timedeltastr(job.resource_list['walltime'])
         if job.extra:
@@ -54,11 +54,11 @@ def print_job_detail(q, jobid, options):
             #    print "        ", k, v
             if job.resources_used:
                 mem = qv.convert_memory(job.resources_used['mem'])
-                print "         Mem:      {0:>6.2f} {1:3}".format(mem['qty'], mem['units'])
+                print "         Mem:          {qty:>6.2f} {units:3}".format(qty=mem['qty'], units=mem['units'])
                 vmem = qv.convert_memory(job.resources_used['vmem'])
-                print "         V.Mem:    {0:>6.2f} {1:3}".format(vmem['qty'], vmem['units'])
-                print "         CPU time:", qv.timedeltastr(job.resources_used['cput'])
-                print "         Walltime:", qv.timedeltastr(job.resources_used['walltime'])
+                print "         V.Mem:        {qty:>6.2f} {units:3}".format(qty=vmem['qty'], units=vmem['units'])
+                print "         CPU time:    ", qv.timedeltastr(job.resources_used['cput'])
+                print "         Walltime:    ", qv.timedeltastr(job.resources_used['walltime'])
             else:
                 print "         Not yet available"
             hostlist = ' '.join(list(job.hosts))

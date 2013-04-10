@@ -28,14 +28,16 @@ nodestate_dict = {
     'E': 'job-exclusive',
     }
 
+def pbstimestr_to_timedelta(pbstime):
+    """Convert a Torque time string to a timedelta object"""
+    t = [int(i) for i in pbstime.split(':')]
+    return datetime.timedelta(hours=t[0], minutes=t[1], seconds=t[2])
+
 
 def timedeltastr(pbstime):
-    """Convert a cput or walltime string into a compact printable string"""
-
+    """Convert a cput or walltime into a compact printable string"""
     dayspat = re.compile('\ days?,')
-    t = [int(i) for i in pbstime.split(':')]
-    td = datetime.timedelta(hours=t[0], minutes=t[1], seconds=t[2])
-    return dayspat.sub('d', str(td))
+    return dayspat.sub('d', str(pbstime))
 
 
 def convert_memory(memstr=None, units=None):
@@ -102,6 +104,10 @@ if __name__ == '__main__':
 
 
     td = datetime.timedelta(hours=5000, minutes=32, seconds=57)
-    print td
-    print timedeltastr(td)
+    print 'td =', td
+    print '   =', timedeltastr(td)
+
+    t = '400:00:00'
+    print 't =', t
+    print '  =', pbstimestr_to_timedelta(t)
 

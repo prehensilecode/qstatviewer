@@ -64,8 +64,8 @@ def print_jobinfo(q, jobids, uorg):
             n_running += 1
             ncpus = rl['ncpus']
             total_ncpus_used += ncpus
-
             total_nodes_used += len(userjobs[jobid].hosts)
+            total_cput_usage += userjobs[jobid].resources_used['cput']
 
             k = 'ncpus'
             v = rl[k]
@@ -73,10 +73,7 @@ def print_jobinfo(q, jobids, uorg):
             print(run_formatstr.format(k=k, v=v, v2=v2))
 
             k = 'nodes'
-            v = rl[k]
-            #v2 = ''
-            #print(run_formatstr.format(k=k, v=v, v2=v2))
-            print(formatstr.format(k=k, v=v))
+            print(formatstr.format(k=k, v=rl[k]))
 
             k = 'mem'
             mem = qv.convert_memory(rl[k])
@@ -94,23 +91,13 @@ def print_jobinfo(q, jobids, uorg):
             print(run2_formatstr.format(k=k, k2=k2, v=v, v2=v2))
 
             k = 'cput'
-            (h,m,s) = rl[k].split(':')
-            v = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            (h,m,s) = ru[k].split(':')
-            v2 = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            total_cput_usage += datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            print(run_formatstr.format(k=k, v=v, v2=v2))
+            print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))
 
             k = 'walltime'
-            (h,m,s) = rl[k].split(':')
-            v = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            (h,m,s) = ru[k].split(':')
-            v2 = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            print(run_formatstr.format(k=k, v=v, v2=v2))
+            print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))
 
             print ""
-            walltime_remaining = datetime.timedelta(seconds=userjobs[jobid].walltime_remaining) 
-            print "    Walltime remaining (est.):", walltime_remaining
+            print "    Walltime remaining (est.):", userjobs[jobid].walltime_remaining
 
         else:
             k = 'ncpus'
@@ -132,14 +119,10 @@ def print_jobinfo(q, jobids, uorg):
             print(formatstr.format(k=k, v=v))
 
             k = 'cput'
-            (h,m,s) = rl[k].split(':')
-            v = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            print(formatstr.format(k=k, v=v))
+            print(formatstr.format(k=k, v=rl[k]))
     
             k = 'walltime'
-            (h,m,s) = rl['walltime'].split(':')
-            v = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-            print(formatstr.format(k=k, v=v))
+            print(formatstr.format(k=k, v=rl[k]))
 
         print("")
 
@@ -220,14 +203,11 @@ def main(user=None, group=None, summary=False):
         for u in sorted_users:
             group = users_jobs[u][0].group
             for job in users_jobs[u]:
-                for k,v in job.resource_list.iteritems():
-                    if k == 'ncpus':
-                        total_ncpus_used += v
-                for k,v in job.resources_used.iteritems():
-                    if k == 'cput':
-                        if v:
-                            (h,m,s) = v.split(':')
-                            total_cput_usage += datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+                if 'ncpus' in job.resource_list:
+                    total_ncpus_used += job.resource_list['ncpus']
+                if 'cput' in job.resources_used:
+                    total_cput_usage += job.resources_used['cput']
+
 
             print("{u:>8.8} {g:>12.12} {n:>5} {t:>20}".format(u=u, g=group, n=total_ncpus_used, t=total_cput_usage))
 

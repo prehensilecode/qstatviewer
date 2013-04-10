@@ -14,7 +14,7 @@ import pickle
 from PBSQuery import PBSQuery
 from StringIO import StringIO
 
-from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory
+from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory, pbstimestr_to_timedelta
 
 ### This does not handle job arrays:
 ### - array jobs have two more entries: job_array_request, job_array_id, and 
@@ -127,8 +127,8 @@ class Job:
         else:
             self.resource_list['ncpus'] = self.__count_ncpus()
         self.ncpus = self.resource_list['ncpus']
-        self.resource_list['walltime'] = self.resource_list['walltime'][0]
-        self.resource_list['cput'] = self.resource_list['cput'][0]
+        self.resource_list['walltime'] = pbstimestr_to_timedelta(self.resource_list['walltime'][0])
+        self.resource_list['cput'] = pbstimestr_to_timedelta(self.resource_list['cput'][0])
         self.resource_list['mem'] = self.resource_list['mem'][0]
         self.resource_list['pmem'] = self.resource_list['pmem'][0]
         self.resource_list['arch'] = self.resource_list['arch'][0]
@@ -143,8 +143,8 @@ class Job:
         if 'resources_used' in pbsjobs_dict:
             self.resources_used['mem'] = pbsjobs_dict['resources_used']['mem'][0]
             self.resources_used['vmem'] = pbsjobs_dict['resources_used']['vmem'][0]
-            self.resources_used['cput'] = pbsjobs_dict['resources_used']['cput'][0]
-            self.resources_used['walltime'] = pbsjobs_dict['resources_used']['walltime'][0]
+            self.resources_used['cput'] = pbstimestr_to_timedelta(pbsjobs_dict['resources_used']['cput'][0])
+            self.resources_used['walltime'] = pbstimestr_to_timedelta(pbsjobs_dict['resources_used']['walltime'][0])
 
         if 'session_id' in pbsjobs_dict:
             self.session_id = int(pbsjobs_dict['session_id'][0])
@@ -154,7 +154,7 @@ class Job:
         # remaining walltime
         self.walltime_remaining = 0
         if 'Walltime' in pbsjobs_dict:
-            self.walltime_remaining = int(pbsjobs_dict['Walltime']['Remaining'][0])
+            self.walltime_remaining = datetime.timedelta(seconds=int(pbsjobs_dict['Walltime']['Remaining'][0]))
 
         ###
         ### These properties are available only to admin user:
