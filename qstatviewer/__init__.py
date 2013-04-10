@@ -16,7 +16,7 @@ from PBSQuery import PBSQuery
 from StringIO import StringIO
 
 
-from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory, timedeltastr
+from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory, timedeltastr, pbstimestr_to_timedelta
 
 from qstatviewer.Node import Node
 from qstatviewer.Job import Job
