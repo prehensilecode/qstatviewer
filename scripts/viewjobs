@@ -48,6 +48,137 @@ def jobs_on_nodes(qv):
     print''
     tmpset.clear()
 
+def mem_stats(mem_req_list):
+    # expect all values to be in GiB
+    retval = {'min': 0., 'max': 0., 'mean': 0.}
+
+    m = [mem['qty'] for mem in mem_req_list]
+
+    retval['min'] = min(m)
+    retval['max'] = max(m)
+    retval['mean'] = sum(m)/len(m)
+    
+    return retval
+
+
+def total_seconds(td):
+    # td is a datetime.timedelta object; drop the microseconds
+    return (td.days * 86400 + td.seconds)
+
+
+def viewjobs(qv, user=None, all=False, group=None, state=None):
+    n_jobs_running = 0
+    n_jobs_queued = 0
+    nodes_req = []
+    ncpus_req = []
+    mem_req = []
+    walltimes_req = []
+
+    print('{0}:'.format(qv.pbsquery.server))
+    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
+        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
+    print("------------------------------------------------------------------------------------------------------------------------------------------")
+
+    print_this_p = False
+
+    dayspat = re.compile('\ days?,')
+
+    for jobid, j in sorted(qv.jobs.iteritems()):
+        nodect = j.resource_list['nodect']
+        ntasks = j.resource_list['ncpus']
+        mem    = qstatviewer.convert_memory(j.resource_list['mem'], 'gb')
+        wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
+
+        nodes_req.append(nodect)
+        ncpus_req.append(ntasks)
+
+        mem_req.append(mem)
+
+        t = [int(i) for i in j.resource_list['walltime'].split(':')]
+        td = datetime.timedelta(hours=t[0], minutes=t[1], seconds=t[2])
+        walltimes_req.append(td)
+
+        if user:
+            #print 'FOOBAR: j.owner = ', j.owner
+            if j.owner == user:
+                print_this_p = True
+        elif group:
+            if j.group == group:
+                print_this_p = True
+        elif state:
+            if state == 'r' or state == 'R':
+                state = 'R'
+            elif state == 'q' or state == 'Q':
+                state = 'Q'
+            if j.state == state:
+                print_this_p = True
+        elif all:
+            print_this_p = True
+        else:
+            print_this_p = True
+
+        if j.state == 'R':
+            n_jobs_running += 1
+            if not j.resources_used:
+                # for some reason, some running jobs have no resources_used element
+                #print 'FOOBAR: id = ', jobid
+                #print 'FOOBAR:      ', j.resources_used
+                #print ''
+                elapse = 'n/a'
+                fabric = 'n/a'
+            if j.resources_used:
+                elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
+                nhosts = len(j.hosts)
+                hostlist = list(j.hosts)
+                if nhosts == 1:
+                    fabric = qv.nodes[hostlist[0]].fabric
+                else:
+                    fabric = qv.nodes[hostlist[0]].fabric
+                    for n in range(1,nhosts):
+                        curfabric = qv.nodes[hostlist[n]].fabric
+                        if curfabric != fabric:
+                            print 'FOOBAR: curfabric = ', curfabric
+                            print 'FOOBAR:    fabric = ', fabric
+                            fabric = 'mix'
+                            break
+                        else:
+                            continue
+        else:
+            n_jobs_queued += 1
+            elapse = 'n/a'
+            fabric = 'n/a'
+
+        formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
+
+        if print_this_p:
+            print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
+            print_this_p = False
+
+    #
+    # summary
+    #
+    print("\nSUMMARY JOB STATISTICS")
+    print("No. of jobs running: {nr:>4d}".format(nr=n_jobs_running))
+    print(" No. of jobs queued: {nq:>4d}".format(nq=n_jobs_queued))
+    print("  Total no. of jobs: {nt:>4d}".format(nt=(n_jobs_running + n_jobs_queued)))
+
+    print("")
+
+    ms = mem_stats(mem_req)
+    print("Min. memory request: {m:>7.2f} GiB                  Min. no. of nodes: {n:>2d}".format(m=ms['min'],n=min(nodes_req)))
+    print("Max. memory request: {m:>7.2f} GiB                  Max. no. of nodes: {n:>2d}".format(m=ms['max'],n=max(nodes_req)))
+    print("Mean memory request: {m:>7.2f} GiB                  Mean no. of nodes: {n:>5.2f}".format(m=ms['mean'],n=(sum(nodes_req)/float(len(nodes_req)))))
+    
+    print("")
+
+    print("Min. walltime request: {w:>19}        Min. no. of CPUs: {n:>3d}".format(w=min(walltimes_req), n=min(ncpus_req)))
+    print("Max. walltime request: {w:>19}        Max. no. of CPUs: {n:>3d}".format(w=max(walltimes_req), n=max(ncpus_req)))
+
+    wt = []
+    for w in walltimes_req:
+        wt.append(total_seconds(w))  # drop fractional seconds
+    print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=datetime.timedelta(seconds=(sum(wt)/len(wt))), n=(sum(ncpus_req)/float(len(ncpus_req)))))
+    
 
 def main(user=None, all=False, group=None, state=None, nodes=False):
     qv = qstatviewer.QstatViewer()
@@ -55,75 +186,7 @@ def main(user=None, all=False, group=None, state=None, nodes=False):
     if nodes:
         jobs_on_nodes(qv)
     else:
-        print('{0}:'.format(qv.pbsquery.server))
-        print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>10} {treq:>16}  S {tel:>16}".format(j="JOB ID", u="USERNAME", 
-            g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
-        print("------------------------------------------------------------------------------------------------------------------------------------------")
-    
-        print_this_p = False
-
-        dayspat = re.compile('\ days?,')
-
-        for jobid, j in sorted(qv.jobs.iteritems()):
-            nodect = j.resource_list['nodect']
-            ntasks = j.resource_list['ncpus']
-            mem    = qstatviewer.convert_memory(j.resource_list['mem'], 'gb')
-            wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
-    
-            if user:
-                #print 'FOOBAR: j.owner = ', j.owner
-                if j.owner == user:
-                    print_this_p = True
-            elif group:
-                if j.group == group:
-                    print_this_p = True
-            elif state:
-                if state == 'r' or state == 'R':
-                    state = 'R'
-                elif state == 'q' or state == 'Q':
-                    state = 'Q'
-                if j.state == state:
-                    print_this_p = True
-            elif all:
-                print_this_p = True
-            else:
-                print_this_p = True
-
-            if j.state == 'R':
-                if not j.resources_used:
-                    # for some reason, some running jobs have no resources_used element
-                    #print 'FOOBAR: id = ', jobid
-                    #print 'FOOBAR:      ', j.resources_used
-                    #print ''
-                    elapse = 'n/a'
-                    fabric = 'n/a'
-                if j.resources_used:
-                    elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
-                    nhosts = len(j.hosts)
-                    hostlist = list(j.hosts)
-                    if nhosts == 1:
-                        fabric = qv.nodes[hostlist[0]].fabric
-                    else:
-                        fabric = qv.nodes[hostlist[0]].fabric
-                        for n in range(1,nhosts):
-                            curfabric = qv.nodes[hostlist[n]].fabric
-                            if curfabric != fabric:
-                                print 'FOOBAR: curfabric = ', curfabric
-                                print 'FOOBAR:    fabric = ', fabric
-                                fabric = 'mix'
-                                break
-                            else:
-                                continue
-                        
-            else:
-                elapse = 'n/a'
-                fabric = 'n/a'
-
-            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
-
-            if print_this_p:
-                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
-                print_this_p = False
+        viewjobs(qv=qv, user=user, all=all, group=group, state=state)
 
 if __name__ == '__main__':
     usage = """usage: %prog [options] [USERNAME]
