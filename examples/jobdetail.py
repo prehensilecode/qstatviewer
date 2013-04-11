@@ -68,7 +68,7 @@ def print_job_detail(q, jobid, options):
                 fabricset.add(q.nodes[h].fabric)
             fabriclist = ','.join(fabricset)
             print "    Network:", fabriclist
-            print "    Walltime remaining:", datetime.timedelta(seconds=job.walltime_remaining)
+            print "    Walltime remaining:", qv.timedeltastr(job.walltime_remaining)
             if options.long:
                 print "    Submit host:", job.submit_host
                 print "    Submit args:", job.submit_args
