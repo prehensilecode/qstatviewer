@@ -31,8 +31,6 @@ for nodename,node in sorted(ibnodes.iteritems()):
             owner = q.jobs[j].owner
             group = q.jobs[j].group
             reqwt = q.jobs[j].resource_list['walltime']
-            #t = [int(i) for i in reqwt.split(':')]
-            #td = datetime.timedelta(hours=t[0], minutes=t[1], seconds=t[2])
             if reqwt > datetime.timedelta(hours=48):
                 usewt = qv.timedeltastr(q.jobs[j].resources_used['walltime'])
                 n_nodes = int(q.jobs[j].resource_list['nodes'].split(':')[0])

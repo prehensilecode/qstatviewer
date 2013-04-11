@@ -61,8 +61,11 @@ def main(node=None, clan=None, fabric=None, property=None):
     if property:
         propertylist = property.split(',')
 
-    shortclanpat = re.compile('^\d{2}$')
-    shortgridpat = re.compile('^g(\d{2})$')
+    shortclanpat = re.compile(r'^\d{2}$')
+    shortgridpat = re.compile(r'^g(\d{2})$')
+    bc_clanpat = re.compile(r'^bc(\d{2})$')
+    bcg_clanpat = re.compile(r'^bcg(\d{2})$')
+
     if nodelist:
         pass
     elif clanlist:
@@ -73,6 +76,11 @@ def main(node=None, clan=None, fabric=None, property=None):
                     clan = ''.join(['clan', clan])
                 elif shortgridpat.match(clan):
                     clan = ''.join(['grid', shortgridpat.match(clan).group(1)])
+                elif bc_clanpat.match(clan):
+                    clan = ''.join(['clan', bc_clanpat.match(clan).group(1)])
+                elif bcg_clanpat.match(clan):
+                    clan = ''.join(['grid', bcg_clanpat.match(clan).group(1)])
+
                 if node.clan == clan:
                     nodelist.append(nodename)
     elif fabriclist:
