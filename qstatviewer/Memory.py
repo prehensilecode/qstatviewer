@@ -29,16 +29,10 @@ class Memory:
         else:
             raise Exception
 
-        #if memstr:
-        #    self.__mem = convert_memory(memstr, 'kb')
-        #elif memamt:
-        #    self.__mem = memamt
-
         self.qty = self.__mem['qty']
         self.units = self.__mem['units']
 
         self.__to_kiB()
-
 
 
     def in_MiB(self):
@@ -55,6 +49,7 @@ class Memory:
         else:
             formatstr = "{qty:.2f} {units:3.3}"
         return formatstr.format(qty=mem['qty'], units = mem['units'])
+
 
     def in_GiB(self):
         qty = 0.
