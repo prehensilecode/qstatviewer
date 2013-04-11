@@ -87,13 +87,16 @@ class Memory:
 
 
     def __cmp__(self, other):
-        # make sure
-        pass
+        return (self.qty - other.qty)
+
+
+    def __repr__(self):
+        fmtstr = "{qty:.2f} {units:3.3}"
+        return fmtstr.format(qty=self.qty, units=self.units)
 
 
     def __str__(self):
-        fmtstr = "{qty:.2f} {units:3.3}"
-        return fmtstr.format(qty=self.qty, units=self.units)
+        return self.__repr__()
         
 
 if __name__ == '__main__':
@@ -143,10 +146,21 @@ if __name__ == '__main__':
 
     print("")
 
-    mem4 = Memory(900.7)
-    print(mem4)
-    print(mem4.qty)
-    print(mem4.units)
-    print(mem4.in_GiB())
+    mem5 = Memory(900.7)
+    print(mem5)
+    print(mem5.qty)
+    print(mem5.units)
+    print(mem5.in_GiB())
     print(mem4.in_MiB())
 
+    print("")
+    print("mem3 = {0}".format(mem3))
+    print("mem4 = {0}".format(mem4))
+    print("mem5 = {0}".format(mem5))
+
+    print("mem3 < mem4 = {0}".format((mem3 < mem4)))
+    print("mem4 < mem3 = {0}".format((mem4 < mem3)))
+    print("mem4 < mem5 = {0}".format((mem4 < mem5)))
+    print("mem5 < mem4 = {0}".format((mem5 < mem4)))
+    print("mem5 == mem5 = {0}".format((mem5 == mem5)))
+    
