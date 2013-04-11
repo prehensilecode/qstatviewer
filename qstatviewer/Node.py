@@ -13,6 +13,7 @@ from PBSQuery import PBSQuery
 from StringIO import StringIO
 
 from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory
+from qstatviewer.Memory import Memory
 
 class Node:
     """
@@ -93,13 +94,13 @@ class Node:
             self.idletime = datetime.timedelta(seconds=int(pbsnodes_dict['status']['idletime'][0]))
             self.rectime = datetime.timedelta(seconds=int(pbsnodes_dict['status']['rectime'][0]))
 
-            self.physmem = convert_memory(pbsnodes_dict['status']['physmem'][0], 'kb')
-            self.availmem = convert_memory(pbsnodes_dict['status']['availmem'][0], 'kb')
-            self.totmem = convert_memory(pbsnodes_dict['status']['totmem'][0], 'kb')
+            self.physmem = Memory(pbsnodes_dict['status']['physmem'][0])
+            self.availmem = Memory(pbsnodes_dict['status']['availmem'][0])
+            self.totmem = Memory(pbsnodes_dict['status']['totmem'][0])
 
             self.size = pbsnodes_dict['status']['size'][0].split(':')
-            self.size[0] = convert_memory(self.size[0], 'kb')
-            self.size[1] = convert_memory(self.size[1], 'kb')
+            self.size[0] = Memory(self.size[0])
+            self.size[1] = Memory(self.size[1])
 
             self.arch = pbsnodes_dict['status']['arch'][0]
             self.loadave = float(pbsnodes_dict['status']['loadave'][0])

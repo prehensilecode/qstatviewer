@@ -15,6 +15,7 @@ from PBSQuery import PBSQuery
 from StringIO import StringIO
 
 from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory, pbstimestr_to_timedelta
+from qstatviewer.Memory import Memory
 
 ### This does not handle job arrays:
 ### - array jobs have two more entries: job_array_request, job_array_id, and 
@@ -129,8 +130,8 @@ class Job:
         self.ncpus = self.resource_list['ncpus']
         self.resource_list['walltime'] = pbstimestr_to_timedelta(self.resource_list['walltime'][0])
         self.resource_list['cput'] = pbstimestr_to_timedelta(self.resource_list['cput'][0])
-        self.resource_list['mem'] = self.resource_list['mem'][0]
-        self.resource_list['pmem'] = self.resource_list['pmem'][0]
+        self.resource_list['mem'] = Memory(self.resource_list['mem'][0])
+        self.resource_list['pmem'] = Memory(self.resource_list['pmem'][0])
         self.resource_list['arch'] = self.resource_list['arch'][0]
         self.resource_list['nodes'] = self.resource_list['nodes'][0]
 
@@ -141,8 +142,8 @@ class Job:
         # resources used
         self.resources_used = {}
         if 'resources_used' in pbsjobs_dict:
-            self.resources_used['mem'] = pbsjobs_dict['resources_used']['mem'][0]
-            self.resources_used['vmem'] = pbsjobs_dict['resources_used']['vmem'][0]
+            self.resources_used['mem'] = Memory(pbsjobs_dict['resources_used']['mem'][0])
+            self.resources_used['vmem'] = Memory(pbsjobs_dict['resources_used']['vmem'][0])
             self.resources_used['cput'] = pbstimestr_to_timedelta(pbsjobs_dict['resources_used']['cput'][0])
             self.resources_used['walltime'] = pbstimestr_to_timedelta(pbsjobs_dict['resources_used']['walltime'][0])
 
