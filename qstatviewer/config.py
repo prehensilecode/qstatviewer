@@ -42,7 +42,7 @@ def timedeltastr(pbstime):
 
 def convert_memory(memstr=None, units=None):
     """
-    Converts TORQUE memory strings, in the form, 'NNNNNNkb' to an integer
+    Converts TORQUE memory strings, in the form, 'NNNNNNkb' to dict: {'qty': QTY, 'units': UNITS}
     """
     KILO = 1024.
     MEGA = 1048576.
