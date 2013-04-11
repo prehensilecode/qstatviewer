@@ -12,6 +12,11 @@ class Memory:
     Represents amount of memory
     """
     def __init__(self, mem):
+        # Example inputs:
+        # - '1024mb'
+        # - {'qty': 4239.123, 'units': 'GiB'}
+        # - 123
+        # - 123.456
         self.__KILO = 1024.
         self.__MEGA = 1048576.
         self.__kiB = 'kiB'
