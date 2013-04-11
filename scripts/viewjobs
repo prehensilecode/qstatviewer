@@ -18,6 +18,7 @@ def jobs_on_nodes(qv):
     print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {f:^5.3} NODES ".format(j="JOB ID", u="USERNAME", 
         g="GROUP", q="QUEUE", jn="JOBNAME", f="NET"));
     print("-----------------------------------------------------------------------------------------------------------------")
+    jobfabric = ''
     formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {fab:^5.3}"
     tmpset = set()
     for id in sorted(qv.jobs.keys()):
@@ -26,18 +27,15 @@ def jobs_on_nodes(qv):
             #print "{0:<11.11}".format(id.split('.')[0]), "{0:>8.8}".format(job.owner), "{0:>13.13}".format(job.egroup), 
             nhosts = len(job.hosts)
             hostlist = list(job.hosts)
-            if nhosts == 1:
-                fabric = qv.nodes[hostlist[0]].fabric
-            else:
-                fabric = qv.nodes[hostlist[0]].fabric
+            job_fabric = qv.nodes[hostlist[0]].fabric
+            if nhosts > 1:
                 for n in range(1,nhosts):
-                    curfabric = qv.nodes[hostlist[n]].fabric
-                    if curfabric != fabric:
-                        fabric = 'mix'
+                    if qv.nodes[hostlist[n]].fabric != job_fabric:
+                        job_fabric = 'mix'
                         break
                     else:
                         continue
-            print formatstr.format(ji=id.split('.')[0], fab=fabric, job=job),
+            print formatstr.format(ji=id.split('.')[0], fab=job_fabric, job=job),
             for h in sorted(job.exec_host):
                 tmpset.add(h.split('/')[0])
             for h in tmpset:
@@ -66,7 +64,7 @@ def total_seconds(td):
     return (td.days * 86400 + td.seconds)
 
 
-def viewjobs(qv, user=None, all=False, group=None, state=None):
+def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     n_jobs_running = 0
     n_jobs_queued = 0
     nodes_req = []
@@ -90,127 +88,168 @@ def viewjobs(qv, user=None, all=False, group=None, state=None):
         mem    = qstatviewer.convert_memory(j.resource_list['mem'], 'gb')
         wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
 
-        nodes_req.append(nodect)
-        ncpus_req.append(ntasks)
-
-        mem_req.append(mem)
-
-        walltimes_req.append(j.resource_list['walltime'])
 
         if user:
-            #print 'FOOBAR: j.owner = ', j.owner
             if j.owner == user:
                 print_this_p = True
         elif group:
             if j.group == group:
                 print_this_p = True
         elif state:
-            if state == 'r' or state == 'R':
-                state = 'R'
-            elif state == 'q' or state == 'Q':
-                state = 'Q'
-            if j.state == state:
+            state = state.upper()
+            if state == j.state:
                 print_this_p = True
+        elif fabric:
+            if fabric.lower() == 'eth':
+                fabric = 'ethernet'
+            elif fabric.lower() == 'inf':
+                fabric = 'infiniband'
+            else:
+                fabric = fabric.lower()
+
+
+            if j.state == 'R':
+                nhosts = len(j.hosts)
+                hostlist = list(j.hosts)
+                for n in range(0,nhosts):
+                    if qv.nodes[hostlist[n]].fabric == fabric:
+                        print_this_p = True
+                        break
         elif all:
             print_this_p = True
         else:
             print_this_p = True
 
+        if print_this_p:
+            nodes_req.append(nodect)
+            ncpus_req.append(ntasks)
+
+            mem_req.append(mem)
+
+            walltimes_req.append(j.resource_list['walltime'])
+
         if j.state == 'R':
-            n_jobs_running += 1
             if not j.resources_used:
                 # for some reason, some running jobs have no resources_used element
-                #print 'FOOBAR: id = ', jobid
-                #print 'FOOBAR:      ', j.resources_used
-                #print ''
                 elapse = 'n/a'
-                fabric = 'n/a'
-            if j.resources_used:
-                cur_wt = j.resources_used['walltime']
-                if cur_wt > longest_walltime:
-                    longest_walltime = cur_wt
-                elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
-                nhosts = len(j.hosts)
-                hostlist = list(j.hosts)
-                if nhosts == 1:
-                    fabric = qv.nodes[hostlist[0]].fabric
-                else:
-                    fabric = qv.nodes[hostlist[0]].fabric
-                    for n in range(1,nhosts):
-                        curfabric = qv.nodes[hostlist[n]].fabric
-                        if curfabric != fabric:
-                            print 'FOOBAR: curfabric = ', curfabric
-                            print 'FOOBAR:    fabric = ', fabric
-                            fabric = 'mix'
-                            break
-                        else:
-                            continue
+                job_fabric = 'n/a'
+
+            if print_this_p:
+                n_jobs_running += 1
+
+                if j.resources_used:
+                    cur_wt = j.resources_used['walltime']
+                    if cur_wt > longest_walltime:
+                        longest_walltime = cur_wt
+                    elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
+                    nhosts = len(j.hosts)
+                    hostlist = list(j.hosts)
+                    job_fabric = qv.nodes[hostlist[0]].fabric
+                    if nhosts > 1:
+                        for n in range(1,nhosts):
+                            if qv.nodes[hostlist[n]].fabric != job_fabric:
+                                job_fabric = 'mix'
+                                break
+                            else:
+                                continue
         else:
             n_jobs_queued += 1
             elapse = 'n/a'
-            fabric = 'n/a'
+            job_fabric = 'n/a'
 
         formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>6.2f} {memunit:<3} {wallt:>16}  {job.job_state} {elapse:>16}"
 
         if print_this_p:
-            print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
+            print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem['qty'], memunit=mem['units'], wallt=wallt_str, elapse=elapse))
             print_this_p = False
 
     #
     # summary
     #
-    print("\nSUMMARY JOB STATISTICS")
-    print("No. of jobs running: {nr:>4d}".format(nr=n_jobs_running))
-    print(" No. of jobs queued: {nq:>4d}".format(nq=n_jobs_queued))
-    print("  Total no. of jobs: {nt:>4d}".format(nt=(n_jobs_running + n_jobs_queued)))
-    print("Longest running job: {t:>17}".format(t=longest_walltime))
+    criterion = ''
+    if group:
+        criterion = 'GROUP {0}'.format(group)
+    elif state:
+        if state == 'R':
+            criterion = 'STATE Running'
+        elif state == 'Q':
+            criterion = 'STATE Queued'
+        else:
+            criterion = 'STATE unknown'
+    elif fabric:
+        criterion = 'FABRIC {0}'.format(fabric)
+
+    if criterion:
+        print("\nSUMMARY JOB STATISTICS FOR {0}".format(criterion))
+    else:
+        print("\nSUMMARY JOB STATISTICS")
+        
+    if not state == 'Q':
+        print("No. of jobs running: {nr:>4d}".format(nr=n_jobs_running))
+    if not state == 'R':
+        print(" No. of jobs queued: {nq:>4d}".format(nq=n_jobs_queued))
+
+    if not state:
+        print("  Total no. of jobs: {nt:>4d}".format(nt=(n_jobs_running + n_jobs_queued)))
+
+    if n_jobs_running > 0:
+        print("Longest running job: {t:>17}".format(t=longest_walltime))
 
     print("")
 
-    ms = mem_stats(mem_req)
-    print("Min. memory request: {m:>7.2f} GiB                  Min. no. of nodes: {n:>2d}".format(m=ms['min'],n=min(nodes_req)))
-    print("Max. memory request: {m:>7.2f} GiB                  Max. no. of nodes: {n:>2d}".format(m=ms['max'],n=max(nodes_req)))
-    print("Mean memory request: {m:>7.2f} GiB                  Mean no. of nodes: {n:>5.2f}".format(m=ms['mean'],n=(sum(nodes_req)/float(len(nodes_req)))))
+    if mem_req:
+        ms = mem_stats(mem_req)
+        print("Min. memory request: {m:>7.2f} GiB                  Min. no. of nodes: {n:>2d}".format(m=ms['min'],n=min(nodes_req)))
+        print("Max. memory request: {m:>7.2f} GiB                  Max. no. of nodes: {n:>2d}".format(m=ms['max'],n=max(nodes_req)))
+        print("Mean memory request: {m:>7.2f} GiB                  Mean no. of nodes: {n:>5.2f}".format(m=ms['mean'],n=(sum(nodes_req)/float(len(nodes_req)))))
     
-    print("")
+        print("")
 
-    print("Min. walltime request: {w:>19}        Min. no. of CPUs: {n:>3d}".format(w=min(walltimes_req), n=min(ncpus_req)))
-    print("Max. walltime request: {w:>19}        Max. no. of CPUs: {n:>3d}".format(w=max(walltimes_req), n=max(ncpus_req)))
+    if walltimes_req and ncpus_req:
+        print("Min. walltime request: {w:>19}        Min. no. of CPUs: {n:>3d}".format(w=min(walltimes_req), n=min(ncpus_req)))
+        print("Max. walltime request: {w:>19}        Max. no. of CPUs: {n:>3d}".format(w=max(walltimes_req), n=max(ncpus_req)))
+    elif walltimes_req:
+        print("Min. walltime request: {w:>19}".format(w=min(walltimes_req)))
+        print("Max. walltime request: {w:>19}".format(w=max(walltimes_req)))
 
-    wt = []
-    for w in walltimes_req:
-        wt.append(total_seconds(w))  # drop fractional seconds
-    print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=datetime.timedelta(seconds=(sum(wt)/len(wt))), n=(sum(ncpus_req)/float(len(ncpus_req)))))
+        wt = []
+        for w in walltimes_req:
+            wt.append(total_seconds(w))  # drop fractional seconds
+        print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=datetime.timedelta(seconds=(sum(wt)/len(wt))), n=(sum(ncpus_req)/float(len(ncpus_req)))))
     
 
-def main(user=None, all=False, group=None, state=None, nodes=False):
+def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None):
     qv = qstatviewer.QstatViewer()
 
     if nodes:
         jobs_on_nodes(qv)
     else:
-        viewjobs(qv=qv, user=user, all=all, group=group, state=state)
+        viewjobs(qv=qv, user=user, all=all, group=group, state=state, fabric=fabric)
 
 if __name__ == '__main__':
     usage = """usage: %prog [options] [USERNAME]
         If USERNAME is given, only jobs belonging to USERNAME are displayed"""
     parser = OptionParser(usage)
     parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
-                      help='displays all jobs')
+                      help='displays all jobs from all users')
     parser.add_option('-g', '--group', dest='group', type='str', 
                       help='displays jobs for users in GROUP')
     parser.add_option('-s', '--state', dest='state', type='str',
                       help='displays jobs with state STATE (q = queued, r = running, e = exiting)')
     parser.add_option('-n', '--nodes', action='store_true', dest='nodes', 
                       default=False, help='displays nodes occupied by job')
+    parser.add_option('-f', '--fabric', dest='fabric', type='str',
+                      help='displays jobs running on network FABRIC type (inf, infiniband, eth, ethernet)')
     (options, args) = parser.parse_args()
 
-    if not args and not options.all and not options.group and not options.state and not options.nodes:
-        parser.print_help()
-        sys.exit(1)
+    if not args:
+        options.all = True
+        #and not options.all and not options.group and not options.state and not options.nodes and not options.fabric:
+        #parser.print_help()
+        #sys.exit(1)
 
     if args:
         main(user=args[0])
     else:
-        main(user=None, all=options.all, group=options.group, state=options.state, nodes=options.nodes)
+        main(user=None, all=options.all, group=options.group, state=options.state, nodes=options.nodes, fabric=options.fabric)
 
