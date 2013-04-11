@@ -47,13 +47,8 @@ class Node:
         self.ncpus = 8           # integer -- no. of processors
         self.loadave = 0.        # float -- load average
         self.netload = 0         # integer -- network load (?)
-        self.jobs = []           # list of jobs running on node
-                                 #    we will use the Job class to find this because the
-                                 #    time difference between calling qstat -f and pbsnodes -a
-                                 #    may mean the per-node list of jobs may have changed
-                                 #    ARGH. But if the job list has changed, the state may 
-                                 #    also have changed. So, just get it from pbsnodes -a
-        self.unique_jobs = set()
+        self.jobs = []           # list of job IDs running on node
+        self.unique_jobs = set() # set of job IDs running on node
         self.varattr = ''        # list - non-functional - see http://www.clusterresources.com/torquedocs21/a.cmomconfig.shtml
                                  #        and http://www.clusterresources.com/pipermail/torquedev/2008-October/001228.html
         self.rectime = 0         # integer -- ??
