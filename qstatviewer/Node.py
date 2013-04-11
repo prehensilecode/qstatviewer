@@ -6,7 +6,7 @@ Encapsulates information about Torque nodes
 # Author: David Chin <dwchin@acm.org>
 # Copyright 2013 Wake Forest University
 
-import sys, os, re, string, copy
+import sys, os, re, string, copy, datetime
 import pickle
 
 from PBSQuery import PBSQuery
@@ -40,10 +40,10 @@ class Node:
         self.sessions = ''       # list of integers -- session IDs
         self.nsessions = ''      # integer -- number of sessions
         self.nusers = 0          # integer - no. of users
-        self.idletime = 0        # integer -- no. of seconds idle (?)
-        self.totmem = 0          # integer -- total memory in kb
-        self.availmem = 0        # integer -- available memory in kb
-        self.physmem = 0         # integer -- physical memory in kb
+        self.idletime = 0        # integer -- no. of seconds idle (?) : converted to timedelta below
+        self.totmem = 0          # integer -- total memory in kb : converted to memory object below
+        self.availmem = 0        # integer -- available memory in kb : converted to memory object below
+        self.physmem = 0         # integer -- physical memory in kb : converted to memory object below
         self.ncpus = 8           # integer -- no. of processors
         self.loadave = 0.        # float -- load average
         self.netload = 0         # integer -- network load (?)
@@ -92,13 +92,13 @@ class Node:
             self.nsessions = int(pbsnodes_dict['status']['nsessions'][0])
             self.nusers = int(pbsnodes_dict['status']['nusers'][0])
             self.opsys = pbsnodes_dict['status']['opsys'][0]
-            self.physmem = int(pbsnodes_dict['status']['physmem'][0].split('kb')[0])
-            self.availmem = int(pbsnodes_dict['status']['availmem'][0].split('kb')[0])
             self.varattr = pbsnodes_dict['status']['varattr']
             self.netload = int(pbsnodes_dict['status']['netload'][0])
             self.uname = pbsnodes_dict['status']['uname'][0]
-            self.idletime = int(pbsnodes_dict['status']['idletime'][0])
-            self.totmem = int(pbsnodes_dict['status']['totmem'][0].split('kb')[0])
+            self.idletime = datetime.timedelta(seconds=int(pbsnodes_dict['status']['idletime'][0]))
+            self.physmem = convert_memory(pbsnodes_dict['status']['physmem'][0], 'kb')
+            self.availmem = convert_memory(pbsnodes_dict['status']['availmem'][0], 'kb')
+            self.totmem = convert_memory(pbsnodes_dict['status']['totmem'][0], 'kb')
 
             self.size = pbsnodes_dict['status']['size'][0].split(':')
             self.size[0] = int(self.size[0].split('kb')[0])
