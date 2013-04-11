@@ -15,10 +15,10 @@ group = ''
 reqwt = ''
 usewt = ''
 
-formatstr = "{n:>9}: {id:>6} {owner:>8} {group:>14} {nodes:>16}  {reqwt:>10}  {usewt:>10}"
+formatstr = "{n:>9}: {id:>6} {owner:>8} {group:>14} {nodes:>16}  {reqwt:>19}  {usewt:>19}"
 print(formatstr.format(n="NODE", id="JOBID", owner="OWNER", group="GROUP", nodes="REQ.NODES", reqwt="REQ.WALL", usewt="CUR.WALL"))
-print("----------------------------------------------------------------------------------")
-for nodename,node in q.nodes.iteritems():
+print("----------------------------------------------------------------------------------------------------")
+for nodename,node in sorted(q.nodes.iteritems()):
     if node.unique_jobs:
         for j in node.unique_jobs:
             id = q.jobs[j].id.split('.')[0]
