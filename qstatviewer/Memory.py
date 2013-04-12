@@ -108,9 +108,9 @@ class Memory:
             units = self.__GiB
 
         if qty < 1:
-            formatstr = "{qty:.2e} {units:3.3}"
+            formatstr = "{qty:.2e} {units:<}"
         else:
-            formatstr = "{qty:.2f} {units:3.3}"
+            formatstr = "{qty:.2f} {units:<}"
         return formatstr.format(qty=qty, units=units)
         
 
