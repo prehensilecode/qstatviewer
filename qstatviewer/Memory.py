@@ -130,9 +130,17 @@ class Memory:
 
 
     def __cmp__(self, other):
-        return (self.qty - other.qty)
+        return (self.__mem['qty'] - other.__mem['qty'])
+
+    
+    def __add__(self, other):
+        return Memory(self.__mem['qty'] + other.__mem['qty'])
 
 
+    def __sub__(self, other):
+        return Memory(self.__mem['qty'] - other.__mem['qty'])
+
+    
     def __repr__(self):
         fmtstr = "{qty:.2f} {units:3.3}"
         if self.qty < 1:
@@ -250,4 +258,7 @@ if __name__ == '__main__':
     print("mem5 < mem4 = {0}".format((mem5 < mem4)))
     print("mem5 == mem5 = {0}".format((mem5 == mem5)))
     
+
+    print("mem3 + mem4 = {0}".format(mem3 + mem4))
+    print("mem4 - mem3 = {0}".format(mem4 - mem3))
 
