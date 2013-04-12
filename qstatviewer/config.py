@@ -57,7 +57,7 @@ def convert_memory(memstr=None, units=None):
     mibpat = re.compile(r'\d+MiB$')
     gbpat = re.compile(r'\d+gb$')
     gibpat = re.compile(r'\d+GiB$')
-    
+
     if memstr:
         if bpat.match(memstr):
             memkb = float(memstr.split('b')[0]) / KILO

@@ -155,6 +155,18 @@ class Memory:
         
 
 if __name__ == '__main__':
+    print("TEST 0")
+    memstr = "1234MiB"
+    print("memstr = ", memstr)
+    mem = Memory(memstr)
+    print("mem = ", mem)
+    memstr = "1234kiB"
+    print("memstr = ", memstr)
+    mem = Memory(memstr)
+    print("mem = ", mem)
+    
+    print("")
+
     print("TEST 1")
     mem = Memory('1274127387kb')
     print(mem)
