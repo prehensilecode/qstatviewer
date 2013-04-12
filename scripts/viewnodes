@@ -17,8 +17,8 @@ import getopt
 import re
 
 import qstatviewer
-from qstatviewer import convert_memory
 from qstatviewer import timedeltastr
+from qstatviewer.Memory import Memory
 
 from optparse import OptionParser
 
@@ -142,7 +142,7 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
             if not mem:
                 mem_match_p = True
             else:
-                mem_match_p = (mem <= float(node.physmem/1024))
+                mem_match_p = (mem <= float(node.physmem.qty/1024))
 
             if not procs:
                 procs_match_p = True
@@ -163,8 +163,11 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                 clan_match_p = True
             else:
                 # re pats for handling shorthand clan names
-                clanpat = re.compile('^(\d{2})$')
-                gridpat = re.compile('^g(\d{2})$')
+                clanpat = re.compile(r'^(\d{2})$')
+                bcpat = re.compile(r'^bc(\d{2})$')
+
+                gridpat = re.compile(r'^g(\d{2})$')
+                bcgpat = re.compile(r'^bcg(\d{2})$')
 
                 clan_match_p = False
 
@@ -173,11 +176,17 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                     if debug_p:
                         print 'DEBUG: c = ', c
                     cp = clanpat.search(c)
+                    bcp = bcpat.search(c)
                     gp = gridpat.search(c)
+                    bcgp = bcgpat.search(c)
                     if cp:
                         c = ''.join(['clan', cp.group(1)])
+                    elif bcp:
+                        c = ''.join(['clan', bcp.group(1)])
                     elif gp:
                         c = ''.join(['grid', gp.group(1)])
+                    elif bcgp:
+                        c = ''.join(['grid', bcgp.group(1)])
 
                     if debug_p:
                         print 'DEBUG: c = ', c
@@ -217,15 +226,14 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                 vmem_tot = 0.
                 for jobid in node.unique_jobs:
                     job = qv.jobs[jobid]
-                    if debug_p:
-                        print('FOOBAR: vmem = ', job.resources_used['vmem'])
-                        print('FOOBAR: vmem = ', convert_memory(job.resources_used['vmem'], 'GB')['qty'])
-                        print('FOOBAR: -')
                     if job.state == 'R':
                         vmem = 0.
                         if 'resources_used' in job.__dict__:
-                            if job.resources_used['vmem']:
-                                vmem = convert_memory(job.resources_used['vmem'], 'GB')['qty']
+                            # compute vmem stats in MiB
+                            if 'vmem' in job.resources_used:
+                                # shouldn't have to check 'vmem' in jobs.resources_used but things seem to get out of sync sometimes
+                                if job.resources_used['vmem']:
+                                    vmem = job.resources_used['vmem'].in_MiB()
                         ncpu_this_node = 0    # no. of cpus used by this job on this node
                         if vmem:
                             vmem_per_cpu = vmem/float(job.ncpus)
@@ -235,7 +243,9 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                             vmem_tot += vmem_per_cpu * ncpu_this_node
                         else:
                             sys.stderr.write('WARNING: no vmem defined for jobid {0}\n'.format(jobid))
-                job_desc = '{vmem_tot:>6.2f} GiB'.format(vmem_tot=vmem_tot)
+                # vmem_tot was computed in MiB
+                vmem_tot = Memory(''.join([str(vmem_tot), 'MiB']))
+                job_desc = '{vmem_tot:>11}'.format(vmem_tot=vmem_tot.pretty_print())
             elif ids_only:
                 idlist = ','.join([jid.split('.')[0] for jid in sorted(node.unique_jobs)])
                 job_desc = '{i}'.format(i=idlist)
@@ -257,16 +267,11 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                     else:
                         vmem = None
                     if vmem:
-                        #jobinfo = 'id={id}, o={owner}, n={name}, mem={mem:>.4} {memunits}'.format(id=jobid.split('.')[0], 
-                        #    owner=owner, 
-                        #    name=name, 
-                        #    mem=convert_memory(vmem)['qty'], 
-                        #    memunits=convert_memory(vmem)['units'])
                         jobinfo = 'id={id}, o={owner}, n_nodes={n_nodes}, mem={mem:>.4} {memunits}, wt={wt}'.format(id=jobid.split('.')[0], 
                             owner=owner, 
                             n_nodes=len(qv.jobs[jobid].hosts),
-                            mem=convert_memory(vmem)['qty'], 
-                            memunits=convert_memory(vmem)['units'],
+                            mem=vmem.qty,
+                            memunits=vmem.units,
                             wt=timedeltastr(qv.jobs[jobid].resource_list['walltime']))
                     else:
                         jobinfo = 'id={id}, o={owner}, n={name}, mem=N/A'.format(id=jobid.split('.')[0], 
@@ -335,7 +340,7 @@ if __name__ == '__main__':
 
     parser = OptionParser(usage)
     parser.add_option('-m', '--mem', action='store', type='int', dest='mem',
-                      metavar='N', help='want nodes with at least N mb of total mem')
+                      metavar='N', help='want nodes with at least N MiB of total mem')
     parser.add_option('-p', '--procs', action='store', type='int', dest='procs',
                       metavar='N', help='want nodes with at least N procs free')
     parser.add_option('-n', '--net', action='store', type='str', dest='net',
