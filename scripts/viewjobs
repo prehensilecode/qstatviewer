@@ -71,6 +71,10 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     n_jobs_queued = 0
     nodes_req = []
     ncpus_req = []
+    occupied_hosts = set()
+    total_ncpus_used = 0
+    total_cput_usage = datetime.timedelta()
+    total_mem_usage = Memory()
     mem_req = []
     walltimes_req = []
     longest_walltime = datetime.timedelta(seconds=0)
@@ -124,6 +128,9 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
         else:
             print_this_p = True
 
+        #
+        # accumulate stats
+        #
         if print_this_p:
             nodes_req.append(nodect)
             ncpus_req.append(ntasks)
@@ -146,6 +153,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                     if cur_wt > longest_walltime:
                         longest_walltime = cur_wt
                     elapse = qstatviewer.timedeltastr(j.resources_used['walltime'])
+                    occupied_hosts = occupied_hosts.union(j.hosts)
                     nhosts = len(j.hosts)
                     hostlist = list(j.hosts)
                     job_fabric = qv.nodes[hostlist[0]].fabric
@@ -156,6 +164,10 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                                 break
                             else:
                                 continue
+
+                    total_ncpus_used += j.resource_list['ncpus']
+                    total_cput_usage += j.resources_used['cput']
+                    total_mem_usage += j.resources_used['vmem']
         else:
             if print_this_p:
                 n_jobs_queued += 1
@@ -199,6 +211,12 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
 
     if n_jobs_running > 0:
         print("Longest running job: {t:>17}".format(t=longest_walltime))
+
+    print("")
+    print("Total no. of nodes occupied: {n:>4d}".format(n=len(occupied_hosts)))
+    print(" Total no. of CPUs occupied: {c:>4d}".format(c=total_ncpus_used))
+    print("    Total CPU time consumed: {t:>14}".format(t=total_cput_usage))
+    print("      Total memory consumed: {m:>11}".format(m=total_mem_usage.pretty_print()))
 
     print("")
 
