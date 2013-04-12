@@ -9,6 +9,7 @@ Displays information about one or more users' jobs
 
 import sys, os, re
 import datetime
+import getpass
 from optparse import OptionParser
 
 import qstatviewer
@@ -79,6 +80,8 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
         g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME"));
     print("------------------------------------------------------------------------------------------------------------------------------------------")
 
+    # print_this_p also tells us when a job matches criteria, and so
+    # the job's info should be figured into the summary stats
     print_this_p = False
 
     dayspat = re.compile('\ days?,')
@@ -154,9 +157,10 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                             else:
                                 continue
         else:
-            n_jobs_queued += 1
-            elapse = 'n/a'
-            job_fabric = 'n/a'
+            if print_this_p:
+                n_jobs_queued += 1
+                elapse = 'n/a'
+                job_fabric = 'n/a'
 
         formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}"
 
@@ -229,7 +233,8 @@ def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None)
 
 if __name__ == '__main__':
     usage = """usage: %prog [options] [USERNAME]
-        If USERNAME is given, only jobs belonging to USERNAME are displayed"""
+        If USERNAME is given, only jobs belonging to USERNAME are displayed. 
+        If no USERNAME is given, jobs belonging to the current user are displayed."""
     parser = OptionParser(usage)
     parser.add_option('-a', '--all', action='store_true', dest='all', default=False,
                       help='displays all jobs from all users')
@@ -243,13 +248,10 @@ if __name__ == '__main__':
                       help='displays jobs running on network FABRIC type (inf, infiniband, eth, ethernet)')
     (options, args) = parser.parse_args()
 
-    if not args:
-        options.all = True
-        #and not options.all and not options.group and not options.state and not options.nodes and not options.fabric:
-        #parser.print_help()
-        #sys.exit(1)
-
-    if args:
+    # if no username given, and no options specified, then view user's own jobs
+    if not args and (not options.all and not options.group and not options.state and not options.nodes and not options.fabric):
+        main(user=getpass.getuser())
+    elif args:
         main(user=args[0])
     else:
         main(user=None, all=options.all, group=options.group, state=options.state, nodes=options.nodes, fabric=options.fabric)
