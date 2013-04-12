@@ -42,8 +42,8 @@ def print_job_detail(q, jobid, options):
         print "         No. of nodes:", job.resource_list['nodect']
         print "         Mem:          {mem:>11}".format(mem=job.resource_list['mem'].pretty_print())
         print "         P.Mem:        {mem:>11}".format(mem=job.resource_list['pmem'].pretty_print())
-        print "         CPU time:    ", qv.timedeltastr(job.resource_list['cput'])
-        print "         Walltime:    ", qv.timedeltastr(job.resource_list['walltime'])
+        print "         CPU time:    {0:>13}".format(qv.timedeltastr(job.resource_list['cput']))
+        print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
         if job.extra:
             print "         X:           ", job.extra
         if job.state == 'R':
