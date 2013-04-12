@@ -10,3 +10,4 @@ scripts/viewjobs
 scripts/userjobs
 scripts/users_on_node
 scripts/jobinfo_node
+scripts/jobdetail
