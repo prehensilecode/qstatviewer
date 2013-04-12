@@ -40,35 +40,40 @@ def print_job_detail(q, jobid, options):
         #    print "        ", k, v
         print "         Nodes:       ", job.resource_list['nodes']
         print "         No. of nodes:", job.resource_list['nodect']
-        mem = qv.convert_memory(job.resource_list['mem'])
-        print "         Mem:          {qty:>6.2f} {units:3}".format(qty=mem['qty'], units=mem['units'])
-        pmem = qv.convert_memory(job.resource_list['pmem'])
-        print "         P.Mem:        {qty:>6.2f} {units:3}".format(qty=pmem['qty'], units=pmem['units'])
+        print "         Mem:          {mem:>11}".format(mem=job.resource_list['mem'].pretty_print())
+        print "         P.Mem:        {mem:>11}".format(mem=job.resource_list['pmem'].pretty_print())
         print "         CPU time:    ", qv.timedeltastr(job.resource_list['cput'])
         print "         Walltime:    ", qv.timedeltastr(job.resource_list['walltime'])
         if job.extra:
             print "         X:           ", job.extra
         if job.state == 'R':
             print "    Resources used:" 
-            #for k,v in job.resources_used.iteritems():
-            #    print "        ", k, v
             if job.resources_used:
-                mem = qv.convert_memory(job.resources_used['mem'])
-                print "         Mem:          {qty:>6.2f} {units:3}".format(qty=mem['qty'], units=mem['units'])
-                vmem = qv.convert_memory(job.resources_used['vmem'])
-                print "         V.Mem:        {qty:>6.2f} {units:3}".format(qty=vmem['qty'], units=vmem['units'])
+                print "         Mem:          {mem:>11}".format(mem=job.resources_used['mem'].pretty_print())
+                print "         V.Mem:        {mem:>11}".format(mem=job.resources_used['vmem'].pretty_print())
                 print "         CPU time:    ", qv.timedeltastr(job.resources_used['cput'])
                 print "         Walltime:    ", qv.timedeltastr(job.resources_used['walltime'])
             else:
                 print "         Not yet available"
+
             hostlist = ' '.join(list(job.hosts))
             print "    Hosts:", hostlist
+
             fabricset = set()
             for h in job.hosts:
                 fabricset.add(q.nodes[h].fabric)
             fabriclist = ','.join(fabricset)
             print "    Network:", fabriclist
+
             print "    Walltime remaining:", qv.timedeltastr(job.walltime_remaining)
+
+            if options.nodes:
+                nodeheadfmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>9.9} {memavail:>9.9} {state:>6.6} {njobs:>2} {loadave:>4}"
+                nodefmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>9} {memavail:>9} {state:>6.6} {njobs:>2} {loadave:>4.1f}"
+                print(nodeheadfmtstr.format(name="NAME", fabric="FABRIC", memphys="PHYSMEM", memavail="AVAILMEM", state="STATE", njobs="NJOBS", loadave="LOADAVE"))
+                for h in job.hosts:
+                    print_node_detail(q, h, nodefmtstr)
+
             if options.long:
                 print "    Submit host:", job.submit_host
                 print "    Submit args:", job.submit_args
@@ -79,7 +84,6 @@ def print_job_detail(q, jobid, options):
                 if len(job.variable_list):
                     print "    Variable list:"
                     for k,v in job.variable_list.iteritems():
-                        #print "       ", k, ":", v[0]
                         print "        {k:<13}: {v}".format(k=k, v=v[0])
                 print "    Error path:", job.error_path
                 print "    Session ID:", job.session_id
@@ -103,6 +107,18 @@ def print_job_detail(q, jobid, options):
         sys.exit(1)
 
 
+def print_node_detail(q, nodename, fmtstr):
+    node = q.nodes[nodename]
+    name = node.name
+    fabric = node.fabric
+    memphys = node.physmem
+    memavail = node.availmem
+    state = node.state
+    njobs = len(node.jobs)
+    loadave = node.loadave
+    print(fmtstr.format(name=name, fabric=fabric, memphys=memphys, 
+        memavail=memavail, state=state, njobs=njobs, loadave=loadave))
+
 def main(q, jobid_list, options):
     jobid_list.sort()
 
@@ -112,10 +128,14 @@ def main(q, jobid_list, options):
 
 
 if __name__ == '__main__':
-    usage = "usage: %prog jobid [jobid ...]"
+    usage = """usage: %prog jobid [jobid ...]
+    Show detailed information about given jobs
+    """
     parser = OptionParser(usage)
     parser.add_option('-l', '--long', action='store_true', dest='long',
                       default=False, help='long output')
+    parser.add_option('-n', '--nodes', action='store_true', dest='nodes',
+                      default=False, help='show information about nodes occupied by job(s)')
 
     (options, args) = parser.parse_args()
 
