@@ -90,6 +90,30 @@ class Memory:
         return copy.deepcopy(self)
 
 
+    def pretty_print(self):
+        """Select appropriate units based on quantity"""
+        qty = 0.
+        units = ''
+        if self.__mem['qty'] < 1:
+            qty = self.__mem['qty'] * self.__KILO
+            units = 'B'
+        elif self.in_MiB() < 1:
+            qty = self.__mem['qty']
+            units = self.__mem['units']
+        elif self.in_GiB() < 1:
+            qty = self.in_MiB()
+            units = self.__MiB
+        else:
+            qty = self.in_GiB()
+            units = self.__GiB
+
+        if qty < 1:
+            formatstr = "{qty:.2e} {units:3.3}"
+        else:
+            formatstr = "{qty:.2f} {units:3.3}"
+        return formatstr.format(qty=qty, units=units)
+        
+
     def __to_kiB(self):
         """convert to kiB"""
 
@@ -129,7 +153,10 @@ if __name__ == '__main__':
     print(mem.qty)
     print(mem.units)
     print(mem.in_GiB())
+    print(mem.str_in_GiB())
     print(mem.in_MiB())
+    print(mem.str_in_MiB())
+    print(mem.pretty_print())
     
     print("")
 
@@ -139,7 +166,10 @@ if __name__ == '__main__':
     print(mem.qty)
     print(mem.units)
     print(mem.in_GiB())
+    print(mem.str_in_GiB())
     print(mem.in_MiB())
+    print(mem.str_in_MiB())
+    print(mem.pretty_print())
 
     print("")
 
@@ -149,7 +179,10 @@ if __name__ == '__main__':
     print(mem.qty)
     print(mem.units)
     print(mem.in_GiB())
+    print(mem.str_in_GiB())
     print(mem.in_MiB())
+    print(mem.str_in_MiB())
+    print(mem.pretty_print())
 
     print("")
 
@@ -162,6 +195,7 @@ if __name__ == '__main__':
     print(mem2.str_in_GiB())
     print(mem2.in_MiB())
     print(mem2.str_in_MiB())
+    print(mem2.pretty_print())
 
     print("")
 
@@ -175,6 +209,7 @@ if __name__ == '__main__':
     print(mem3.str_in_GiB())
     print(mem3.in_MiB())
     print(mem3.str_in_MiB())
+    print(mem3.pretty_print())
 
     print("")
 
@@ -187,6 +222,7 @@ if __name__ == '__main__':
     print(mem4.str_in_GiB())
     print(mem4.in_MiB())
     print(mem4.str_in_MiB())
+    print(mem4.pretty_print())
 
     print("")
 
@@ -197,8 +233,9 @@ if __name__ == '__main__':
     print(mem5.units)
     print(mem5.in_GiB())
     print(mem5.str_in_GiB())
-    print(mem4.in_MiB())
-    print(mem4.str_in_MiB())
+    print(mem5.in_MiB())
+    print(mem5.str_in_MiB())
+    print(mem5.pretty_print())
 
     print("")
 
