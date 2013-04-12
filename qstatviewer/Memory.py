@@ -11,7 +11,7 @@ class Memory:
     """
     Represents amount of memory
     """
-    def __init__(self, mem):
+    def __init__(self, mem=None):
         # Example inputs:
         # - '1024mb'
         # - {'qty': 4239.123, 'units': 'GiB'}
@@ -23,16 +23,19 @@ class Memory:
         self.__MiB = 'MiB'
         self.__GiB = 'GiB'
 
-        if type(mem) == str:
-            self.__mem = convert_memory(mem, 'kb')
-        elif type(mem) == dict:
-            self.__mem = mem
-        elif type(mem) == int or type(mem) == float:
-            # assume kiB
-            memstr = ''.join([str(mem), 'kb'])
-            self.__mem = {'qty': mem, 'units': self.__kiB}
+        if mem:
+            if type(mem) == str:
+                self.__mem = convert_memory(mem, 'kb')
+            elif type(mem) == dict:
+                self.__mem = mem
+            elif type(mem) == int or type(mem) == float:
+                # assume kiB
+                memstr = ''.join([str(mem), 'kb'])
+                self.__mem = {'qty': mem, 'units': self.__kiB}
+            else:
+                raise Exception
         else:
-            raise Exception
+            self.__mem = {'qty': 0., 'units': self.__kiB}
 
         self.qty = self.__mem['qty']
         self.units = self.__mem['units']
@@ -41,35 +44,46 @@ class Memory:
 
 
     def in_MiB(self):
+        """Returns float of qty in MiB"""
         qty = 0.
         if self.units == self.__kiB:
             qty = self.qty / self.__KILO
         elif self.units == self.__GiB:
             qty = self.qty * self.__KILO
 
-        units = self.__MiB
-        mem = {'qty': qty, 'units': units}
-        if mem['qty'] < 1:
-            formatstr = "{qty:.2e} {units:3.3}"
-        else:
-            formatstr = "{qty:.2f} {units:3.3}"
-        return formatstr.format(qty=mem['qty'], units = mem['units'])
+        return qty
 
 
     def in_GiB(self):
+        """Returns float of qty in GiB"""
         qty = 0.
         if self.units == self.__kiB:
             qty = self.qty / self.__MEGA
         elif self.units == self.__MiB:
             qty = self.qty / self.__KILO
 
-        units = self.__GiB
-        mem = {'qty': qty, 'units': units}
-        if mem['qty'] < 1:
+        return qty
+
+
+    def str_in_MiB(self):
+        qty = self.in_MiB()
+        units = self.__MiB
+        if qty < 1:
             formatstr = "{qty:.2e} {units:3.3}"
         else:
             formatstr = "{qty:.2f} {units:3.3}"
-        return formatstr.format(qty=mem['qty'], units = mem['units'])
+
+        return formatstr.format(qty=qty, units=units)
+
+
+    def str_in_GiB(self):
+        qty = self.in_GiB()
+        units = self.__GiB
+        if qty < 1:
+            formatstr = "{qty:.2e} {units:3.3}"
+        else:
+            formatstr = "{qty:.2f} {units:3.3}"
+        return formatstr.format(qty=qty, units=units)
 
 
     def copy(self):
@@ -97,6 +111,10 @@ class Memory:
 
     def __repr__(self):
         fmtstr = "{qty:.2f} {units:3.3}"
+        if self.qty < 1:
+            formatstr = "{qty:.2e} {units:3.3}"
+        else:
+            formatstr = "{qty:.2f} {units:3.3}"
         return fmtstr.format(qty=self.qty, units=self.units)
 
 
@@ -105,6 +123,7 @@ class Memory:
         
 
 if __name__ == '__main__':
+    print("TEST 1")
     mem = Memory('1274127387kb')
     print(mem)
     print(mem.qty)
@@ -114,6 +133,7 @@ if __name__ == '__main__':
     
     print("")
 
+    print("TEST 2")
     mem = Memory('1536mb')
     print(mem)
     print(mem.qty)
@@ -123,42 +143,66 @@ if __name__ == '__main__':
 
     print("")
 
+    print("TEST 3")
+    mem = Memory()
+    print(mem)
+    print(mem.qty)
+    print(mem.units)
+    print(mem.in_GiB())
+    print(mem.in_MiB())
+
+    print("")
+
+    print("TEST 4")
     mem2 = mem.copy()
     print(mem2)
     print(mem2.qty)
     print(mem2.units)
     print(mem2.in_GiB())
+    print(mem2.str_in_GiB())
     print(mem2.in_MiB())
+    print(mem2.str_in_MiB())
 
     print("")
 
+    print("TEST 5")
     foo = {'qty': 13.235, 'units': 'GiB'}
     mem3 = Memory(foo)
     print(mem3)
     print(mem3.qty)
     print(mem3.units)
     print(mem3.in_GiB())
+    print(mem3.str_in_GiB())
     print(mem3.in_MiB())
+    print(mem3.str_in_MiB())
 
     print("")
 
+    print("TEST 6")
     mem4 = Memory(25.2)
     print(mem4)
     print(mem4.qty)
     print(mem4.units)
     print(mem4.in_GiB())
+    print(mem4.str_in_GiB())
     print(mem4.in_MiB())
+    print(mem4.str_in_MiB())
 
     print("")
 
+    print("TEST 7")
     mem5 = Memory(900.7)
     print(mem5)
     print(mem5.qty)
     print(mem5.units)
     print(mem5.in_GiB())
+    print(mem5.str_in_GiB())
     print(mem4.in_MiB())
+    print(mem4.str_in_MiB())
 
     print("")
+
+    print("TEST 8")
     print("mem3 = {0}".format(mem3))
     print("mem4 = {0}".format(mem4))
     print("mem5 = {0}".format(mem5))
@@ -169,3 +213,4 @@ if __name__ == '__main__':
     print("mem5 < mem4 = {0}".format((mem5 < mem4)))
     print("mem5 == mem5 = {0}".format((mem5 == mem5)))
     
+
