@@ -6,7 +6,7 @@ Misc. functions and global objects for qstatviewer
 # Author: David Chin <dwchin@acm.org>
 # Copyright 2013 Wake Forest University
 
-import re, datetime
+import os, sys, re, datetime
 
 __version__ = '0.8.11'
 
@@ -49,33 +49,27 @@ def convert_memory(memstr=None, units=None):
 
     memkb = 0.
 
-    bpat = re.compile(r'\d+b$')
-    bcappat = re.compile(r'\d+B$')
-    kbpat = re.compile(r'\d+kb$')
-    kibpat = re.compile(r'\d+kiB$')
-    mbpat = re.compile(r'\d+mb$')
-    mibpat = re.compile(r'\d+MiB$')
-    gbpat = re.compile(r'\d+gb$')
-    gibpat = re.compile(r'\d+GiB$')
+    bpat = re.compile(r'(\d+\.?\d*)(b)$', re.I)
+    kbpat = re.compile(r'(\d+\.?\d*)(ki?b)$', re.I)
+    mbpat = re.compile(r'(\d+\.?\d*)(mi?b)$', re.I)
+    gbpat = re.compile(r'(\d+\.?\d*)(gi?b)$', re.I)
 
     if memstr:
-        if bpat.match(memstr):
-            memkb = float(memstr.split('b')[0]) / KILO
-        elif bcappat.match(memstr):
-            memkb = float(memstr.split('B')[0]) / KILO
+        bs = bpat.search(memstr)
+        ks = kbpat.search(memstr)
+        ms = mbpat.search(memstr)
+        gs = gbpat.search(memstr)
+
+        if bs:
+            memkb = float(memstr.split(bs.group(2))[0]) / KILO
         elif kbpat.match(memstr):
-            memkb = float(memstr.split('kb')[0])
-        elif kibpat.match(memstr):
-            memkb = float(memstr.split('kiB')[0])
+            memkb = float(memstr.split(ks.group(2))[0])
         elif mbpat.match(memstr):
-            memkb = float(memstr.split('mb')[0]) * KILO
-        elif mibpat.match(memstr):
-            memkb = float(memstr.split('MiB')[0]) * KILO
+            memkb = float(memstr.split(ms.group(2))[0]) * KILO
         elif gbpat.match(memstr):
-            memkb = float(memstr.split('gb')[0]) * MEGA
-        elif gibpat.match(memstr):
-            memkb = float(memstr.split('GiB')[0]) * MEGA
+            memkb = float(memstr.split(gs.group(2))[0]) * MEGA
         else:
+            sys.stderr.write('convert_memory(): cannot parse "{0}"\n'.format(memstr))
             raise Exception
 
     if not units:
@@ -98,28 +92,65 @@ def convert_memory(memstr=None, units=None):
         mem['qty'] = memkb
     return mem
 
-    
+
 if __name__ == '__main__':
-    print convert_memory('1024000000kb')
-    print convert_memory('1024000000kb', 'MiB')
-    print convert_memory('1024000000kb', 'kB')
+    ms = '1024000000kb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print convert_memory(ms, 'MiB')
+    print convert_memory(ms, 'kB')
 
-    print convert_memory('10b')
-    print convert_memory('10B')
-    print convert_memory('1000b')
-    print convert_memory('1000B')
+    ms = '10b'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '10B'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '1000b'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '1000B'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
 
-    print convert_memory('10kb')
-    print convert_memory('10kiB')
-    print convert_memory('1000kb')
-    print convert_memory('1000kiB')
+    print ''
+    ms = '10kb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '10kiB'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '1000kb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '1000kIb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
 
-    print convert_memory('10mb')
-    print convert_memory('1000mb')
+    print ''
+    ms = '10mb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '1000mib'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
 
-    print convert_memory('10gb')
-    print convert_memory('1000gb')
-
+    print ''
+    ms = '10gb'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print ''
+    ms = '10giB'
+    print('string = {0}'.format(ms))
+    print convert_memory(ms)
+    print('')
 
     td = datetime.timedelta(hours=5000, minutes=32, seconds=57)
     print 'td =', td
