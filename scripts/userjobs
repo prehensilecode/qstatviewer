@@ -76,18 +76,14 @@ def print_jobinfo(q, jobids, uorg):
             print(formatstr.format(k=k, v=rl[k]))
 
             k = 'mem'
-            mem = qv.convert_memory(rl[k])
-            v = "{q:<.2f} {u:3}".format(q=mem['qty'], u=mem['units'])
-            mem = qv.convert_memory(ru[k])
-            v2 = "{q:<.2f} {u:3}".format(q=mem['qty'], u=mem['units'])
+            v = rl[k].pretty_print()
+            v2 = ru[k].pretty_print()
             print(run_formatstr.format(k=k, v=v, v2=v2))
 
             k = 'pmem'
-            pmem = qv.convert_memory(rl[k])
-            v = "{q:<.2f} {u:3}".format(q=pmem['qty'], u=pmem['units'])
+            v = rl[k].pretty_print()
             k2 = 'vmem'
-            vmem = qv.convert_memory(ru[k2])
-            v2 = "{q:<.2f} {u:3}".format(q=vmem['qty'], u=vmem['units'])
+            v2 = ru[k2].pretty_print()
             print(run2_formatstr.format(k=k, k2=k2, v=v, v2=v2))
 
             k = 'cput'
@@ -109,13 +105,11 @@ def print_jobinfo(q, jobids, uorg):
             print(formatstr.format(k=k, v=v))
 
             k = 'mem'
-            mem = qv.convert_memory(rl[k])
-            v = "{q:<.2f} {u:3}".format(q=mem['qty'], u=mem['units'])
+            v = rl[k].pretty_print()
             print(formatstr.format(k=k, v=v))
 
             k = 'pmem'
-            pmem = qv.convert_memory(rl[k])
-            v = "{q:<.2f} {u:3}".format(q=pmem['qty'], u=pmem['units'])
+            v = rl[k].pretty_print()
             print(formatstr.format(k=k, v=v))
 
             k = 'cput'

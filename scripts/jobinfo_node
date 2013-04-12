@@ -35,8 +35,9 @@ def output_stuff(nodelist):
 
                     wt = job.resources_used['walltime']
 
-                    vm = qv.convert_memory(job.resources_used['vmem'])
-                    vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
+                    #vm = qv.convert_memory(job.resources_used['vmem'])
+                    #vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
+                    vmstr = job.resources_used['vmem'].pretty_print()
 
                     print(formatstr.format(space='', ji=ji, o=job.owner, n=job.ncpus, vm=vmstr, wt=wt))
         print('')
@@ -87,6 +88,11 @@ def main(node=None, clan=None, fabric=None, property=None):
         nodelist = []
         for fabric in fabriclist:
             for nodename,node in q.nodes.iteritems():
+                if fabric == 'inf':
+                    fabric = 'infiniband'
+                elif fabric == 'eth':
+                    fabric = 'ethernet'
+
                 if node.fabric == fabric:
                     nodelist.append(nodename)
     elif propertylist:
@@ -113,7 +119,7 @@ if __name__ == '__main__':
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
                       help='list job info for all nodes in CLAN (e.g. clan01, 01, grid03, g03); CLAN may be a comma-separated list')
     parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
-                      help='list job info for all nodes with network FABRIC; FABRIC may be a comma-separated list')
+                      help='list job info for all nodes with network FABRIC (eth, ethernet, inf, infiniband); FABRIC may be a comma-separated list')
     parser.add_option('-p', '--property', type='str', dest='property', metavar='PROPERTY',
                       help='list job info for all nodes with PROPERTY; PROPERTY may be a comma-separated list')
     (options, args) = parser.parse_args()
