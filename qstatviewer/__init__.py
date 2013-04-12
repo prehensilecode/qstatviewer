@@ -21,4 +21,5 @@ from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, conve
 from qstatviewer.Node import Node
 from qstatviewer.Job import Job
 from qstatviewer.QstatViewer import QstatViewer
+from qstatviewer.Memory import Memory
 
