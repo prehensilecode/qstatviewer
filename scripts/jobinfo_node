@@ -32,13 +32,8 @@ def output_stuff(nodelist):
                 job = q.jobs[jobid]
                 if job.state == 'R':
                     ji = jobid.split('.')[0]
-
                     wt = job.resources_used['walltime']
-
-                    #vm = qv.convert_memory(job.resources_used['vmem'])
-                    #vmstr = "{v:>5.2f} {u}".format(v=vm['qty'], u=vm['units'])
                     vmstr = job.resources_used['vmem'].pretty_print()
-
                     print(formatstr.format(space='', ji=ji, o=job.owner, n=job.ncpus, vm=vmstr, wt=wt))
         print('')
 
