@@ -3,6 +3,7 @@ setup.py
 qstatviewer/Job.py
 qstatviewer/Node.py
 qstatviewer/QstatViewer.py
+qstatviewer/Memory.py
 qstatviewer/__init__.py
 qstatviewer/config.py
 scripts/viewnodes
