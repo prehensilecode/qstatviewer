@@ -212,9 +212,13 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     if n_jobs_running > 0:
         print("Longest running job: {t:>17}".format(t=longest_walltime))
 
+    tot_nodes = len(qv.nodes)
+    tot_cpus = 0
+    for k,v in qv.nodes.iteritems():
+        tot_cpus += v.ncpus
     print("")
-    print("Total no. of nodes occupied: {n:>4d}".format(n=len(occupied_hosts)))
-    print(" Total no. of CPUs occupied: {c:>4d}".format(c=total_ncpus_used))
+    print("Total no. of nodes occupied: {n:>4d} / {tn:<d}".format(n=len(occupied_hosts), tn=tot_nodes))
+    print(" Total no. of CPUs occupied: {c:>4d} / {tc:<d}".format(c=total_ncpus_used, tc=tot_cpus))
     print("    Total CPU time consumed: {t:>14}".format(t=total_cput_usage))
     print("      Total memory consumed: {m:>11}".format(m=total_mem_usage.pretty_print()))
 
