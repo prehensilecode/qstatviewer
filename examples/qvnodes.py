@@ -29,7 +29,7 @@ else:
     for nodename, node in sorted(q.nodes.iteritems()):
         print("{0}:".format(nodename))
         for k,v in node.__dict__.iteritems():
-            print("    {0:10.10}\t\t{1}".format(k, v))
+            print("    {0:>13}    {1}".format(k, v))
         print("\n")
 
 
