@@ -232,8 +232,8 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
         print("Total no. of nodes occupied: {n:>4d} / {tn:>4d} [{pct:>.2f}%] ({f} nodes)".format(n=n_nodes, tn=tot_nodes, pct=(float(n_nodes)/tot_nodes*100.), f=fabric))
         print(" Total no. of CPUs occupied: {c:>4d} / {tc:>4d} [{pct:>.2f}%] ({f} nodes)".format(c=total_ncpus_used, tc=tot_cpus, pct=(float(total_ncpus_used)/tot_cpus*100.), f=fabric))
     else:
-        print("Total no. of nodes occupied: {n:>4d} / {tn:<d} [{pct:>.2f}%]".format(n=n_nodes, tn=tot_nodes, pct=(float(n_nodes)/tot_nodes*100.)))
-        print(" Total no. of CPUs occupied: {c:>4d} / {tc:<d} [{pct:>.2f}%]".format(c=total_ncpus_used, tc=tot_cpus, pct=(float(total_ncpus_used)/tot_cpus*100.)))
+        print("Total no. of nodes occupied: {n:>4d} / {tn:>4d} [{pct:>.2f}%]".format(n=n_nodes, tn=tot_nodes, pct=(float(n_nodes)/tot_nodes*100.)))
+        print(" Total no. of CPUs occupied: {c:>4d} / {tc:>4d} [{pct:>.2f}%]".format(c=total_ncpus_used, tc=tot_cpus, pct=(float(total_ncpus_used)/tot_cpus*100.)))
     print("    Total CPU time consumed: {t:>14}".format(t=total_cput_usage))
     print("      Total memory consumed: {m:>11}".format(m=total_mem_usage.pretty_print()))
 
