@@ -212,13 +212,27 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     if n_jobs_running > 0:
         print("Longest running job: {t:>17}".format(t=longest_walltime))
 
-    tot_nodes = len(qv.nodes)
+
+    tot_nodes = 0
     tot_cpus = 0
-    for k,v in qv.nodes.iteritems():
-        tot_cpus += v.ncpus
+
+    if fabric:
+        for name,node in qv.nodes.iteritems():
+            if node.fabric == fabric:
+                tot_nodes += 1
+                tot_cpus += node.ncpus
+    else:
+        tot_nodes = len(qv.nodes)
+        for name,node in qv.nodes.iteritems():
+            tot_cpus += node.ncpus
+
     print("")
-    print("Total no. of nodes occupied: {n:>4d} / {tn:<d}".format(n=len(occupied_hosts), tn=tot_nodes))
-    print(" Total no. of CPUs occupied: {c:>4d} / {tc:<d}".format(c=total_ncpus_used, tc=tot_cpus))
+    if fabric:
+        print("Total no. of nodes occupied: {n:>4d} / {tn:>4d} ({f} nodes)".format(n=len(occupied_hosts), tn=tot_nodes, f=fabric))
+        print(" Total no. of CPUs occupied: {c:>4d} / {tc:>4d} ({f} nodes)".format(c=total_ncpus_used, tc=tot_cpus, f=fabric))
+    else:
+        print("Total no. of nodes occupied: {n:>4d} / {tn:<d}".format(n=len(occupied_hosts), tn=tot_nodes))
+        print(" Total no. of CPUs occupied: {c:>4d} / {tc:<d}".format(c=total_ncpus_used, tc=tot_cpus))
     print("    Total CPU time consumed: {t:>14}".format(t=total_cput_usage))
     print("      Total memory consumed: {m:>11}".format(m=total_mem_usage.pretty_print()))
 
@@ -243,7 +257,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
         for w in walltimes_req:
             wt.append(total_seconds(w))  # drop fractional seconds
         print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=datetime.timedelta(seconds=(sum(wt)/len(wt))), n=(sum(ncpus_req)/float(len(ncpus_req)))))
-    
+
 
 def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None):
     qv = qstatviewer.QstatViewer()
