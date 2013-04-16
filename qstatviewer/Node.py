@@ -15,6 +15,9 @@ from StringIO import StringIO
 from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, convert_memory
 from qstatviewer.Memory import Memory
 
+# Some of the node properties here are defined in the Torque source:
+#    src/resmom/linux/mom_mach.c
+
 class Node:
     """
     Encapsulates information about a node in a TORQUE cluster
@@ -47,7 +50,7 @@ class Node:
         self.physmem = 0         # integer -- physical memory in kb : converted to memory object below
         self.ncpus = 8           # integer -- no. of processors
         self.loadave = 0.        # float -- load average
-        self.netload = 0         # integer -- network load (?)
+        self.netload = 0         # integer -- from src/resmom/linux/mom_mach.c : number of bytes transferred for all interfaces
         self.jobs = []           # list of job IDs running on node
         self.unique_jobs = set() # set of job IDs running on node
         self.varattr = ''        # list - non-functional - see http://www.clusterresources.com/torquedocs21/a.cmomconfig.shtml
@@ -88,7 +91,7 @@ class Node:
             self.nusers = int(pbsnodes_dict['status']['nusers'][0])
             self.opsys = pbsnodes_dict['status']['opsys'][0]
             self.varattr = pbsnodes_dict['status']['varattr']
-            self.netload = int(pbsnodes_dict['status']['netload'][0])
+            self.netload = Memory(''.join([pbsnodes_dict['status']['netload'][0], 'B'])) # convert to useful units
             self.uname = pbsnodes_dict['status']['uname'][0]
 
             self.idletime = datetime.timedelta(seconds=int(pbsnodes_dict['status']['idletime'][0]))
@@ -98,6 +101,9 @@ class Node:
             self.availmem = Memory(pbsnodes_dict['status']['availmem'][0])
             self.totmem = Memory(pbsnodes_dict['status']['totmem'][0])
 
+            # This is actually amount of scratch: 
+            #   from src/resmom/linux/mom_mach.c: **  size  size of a file or filesystem
+            # probably size[0] = total, size[1] = avail, because size[0] > size[1]
             self.size = pbsnodes_dict['status']['size'][0].split(':')
             self.size[0] = Memory(self.size[0])
             self.size[1] = Memory(self.size[1])

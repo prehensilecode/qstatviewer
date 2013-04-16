@@ -1,0 +1,113 @@
+#!/usr/bin/env python
+"""
+Prints details about given node
+"""
+
+# Author: David Chin <dwchin . acm.org>
+
+# Copyright 2013 Wake Forest University
+
+import sys
+import os
+import datetime
+import time
+import re
+import qstatviewer as qv
+from optparse import OptionParser
+
+def print_node_detail(q, nodename, options):
+    if nodename in q.nodes:
+        node = q.nodes[nodename]
+        print("{n:>9}:".format(n=node.name))
+        print("    State:           {s}".format(s=node.state))
+        print("    Resources:       CPUs = {c}; Mem = {mem}; Swap = {swap}; Scratch disk = {s}".format(c=node.ncpus, 
+            mem=node.physmem.pretty_print(), swap=node.totmem.pretty_print(), s=node.size[1].pretty_print()))
+        print("    Cumul. net load: {nl}".format(nl=node.netload.pretty_print()))
+        print("    Network:         {n}".format(n=node.fabric))
+        print("    Properties:      {f}".format(f=sorted(node.properties)))
+        if options.long:
+            print("    Kernel:          {o}".format(o='.'.join(node.uname.split(' ')[2].split('.')[0:-1])))
+            print("    No. sessions:    {ns}".format(ns=node.nsessions))
+            print("    Load:            {l}".format(l=node.loadave))
+        if len(node.unique_jobs) > 0:
+            print("    Reservations:")
+            for j in node.unique_jobs:
+                job = q.jobs[j]
+                print("        {j}: Owner = {o}; Group = {g}; Time remaining = {t}".format(j=j.split('.')[0], 
+                    o=job.owner, g=job.group, t=job.walltime_remaining))
+
+
+def main(q, node_list, options):
+    if options.all:
+        node_list = [n for n in sorted(q.nodes.keys())]
+    elif options.clan:
+        given_clan_list = options.clan.split(',')
+        clan_list = []
+
+        # re pats for handling shorthand clan names
+        clanpat = re.compile(r'^(\d{2})$')
+        bcpat   = re.compile(r'^bc(\d{2})$')
+
+        gridpat = re.compile(r'^g(\d{2})$')
+        bcgpat  = re.compile(r'^bcg(\d{2})$')
+
+        for c in given_clan_list:
+            cp = clanpat.search(c)
+            bcp = bcpat.search(c)
+            gp = gridpat.search(c)
+            bcgp = bcgpat.search(c)
+
+            if cp:
+                clan_list.append(''.join(['clan', cp.group(1)]))
+            elif bcp:
+                clan_list.append(''.join(['clan', bcp.group(1)]))
+            elif gp:
+                clan_list.append(''.join(['grid', gp.group(1)]))
+            elif bcgp:
+                clan_list.append(''.join(['grid', bcgp.group(1)]))
+
+        node_list = []
+        for clan in clan_list:
+            for nodename,node in sorted(q.nodes.iteritems()):
+                if clan == node.clan:
+                    node_list.append(nodename)
+
+    if node_list:
+        node_list.sort()
+
+        for nodename in node_list:
+            print_node_detail(q, nodename, options)
+            print ""
+    elif options.jobs:
+        joblist = options.jobs.split(',')
+        for shortjobid in joblist:
+            jobid = '.'.join([shortjobid, q.servername])
+            if jobid in q.jobs:
+                for h in q.jobs[jobid].hosts:
+                    print_node_detail(q, h)
+
+
+if __name__ == '__main__':
+    usage = """usage: %prog nodename [nodename ...]
+    Show detailed information about given nodes
+    """
+    parser = OptionParser(usage)
+    parser.add_option('-l', '--long', action='store_true', dest='long',
+                      default=False, help='show more information')
+    parser.add_option('-a', '--all', action='store_true', dest='all',
+                      default=False, help='show information about all nodes')
+    parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
+                      help='show information about nodes in given CLAN(s) (comma-delimited, no spaces)')
+    parser.add_option('-j', '--jobs', type='str', dest='jobs', metavar='JOBS',
+                      help='show information about nodes occupied by job(s); comma-delimited string, no spaces')
+
+    (options, args) = parser.parse_args()
+
+    if not args and not (options.long or options.all or options.clan or options.jobs):
+        parser.print_help()
+        sys.exit(1)
+
+    q = qv.QstatViewer()
+
+    main(q, args, options)
+

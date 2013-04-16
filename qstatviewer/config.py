@@ -10,6 +10,15 @@ import os, sys, re, datetime
 
 __version__ = '0.9.4'
 
+# from Torque source: src/include/pbs_job.h
+# JOB_STATE_TRANSIT 0
+# JOB_STATE_QUEUED 1
+# JOB_STATE_HELD  2
+# JOB_STATE_WAITING 3
+# JOB_STATE_RUNNING 4
+# JOB_STATE_EXITING 5
+# JOB_STATE_COMPLETE 6
+
 jobstate_dict = {
     'Q': 'Queued', 
     'H': 'Held',
