@@ -99,7 +99,7 @@ if __name__ == '__main__':
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
                       help='show information about nodes in given CLAN(s) (comma-delimited, no spaces)')
     parser.add_option('-j', '--jobs', type='str', dest='jobs', metavar='JOBS',
-                      help='show information about nodes occupied by job(s); comma-delimited string, no spaces')
+                      help='show information about nodes occupied by job(s) (comma-delimited, no spaces)')
 
     (options, args) = parser.parse_args()
 
