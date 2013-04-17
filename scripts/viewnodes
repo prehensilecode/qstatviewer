@@ -141,7 +141,16 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, f
     tot_ncpus = 0
     tot_ncpus_up = 0
     tot_ncpus_online = 0
-    tot_jobs = len(qv.jobs)
+
+    tot_jobs_running = 0
+    tot_jobs_queued  = 0
+    for jobid,job in sorted(qv.jobs.iteritems()):
+        if job.state == 'R':
+            tot_jobs_running += 1
+        elif job.state == 'Q':
+            tot_jobs_queued += 1
+
+    tot_jobs = tot_jobs_running + tot_jobs_queued
 
     # for inserting blank line between clans
     first_node_p = True
@@ -332,13 +341,13 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, f
     # print summary
     sum_node_formatstr = "    Total nodes: {n:>4}    Total nodes up: {nu:>4}    Total nodes online: {no:>4}"
     sum_cpus_formatstr = "    Total CPUs:  {c:>4}    Total CPUs up:  {cu:>4}    Total CPUs online:  {co:>4}"
-    sum_jobs_formatstr = "    Total jobs:  {j:>4}"
+    sum_jobs_formatstr = "    Jobs running:{jr:>4d}    Jobs queued:    {jq:>4d}    Total jobs:         {jt:>4d}"
 
     print ''
     print 'SUMMARY'
     print(sum_node_formatstr.format(n=tot_nnode, nu=tot_nnode_up, no=tot_nnode_online))
     print(sum_cpus_formatstr.format(c=tot_ncpus, cu=tot_ncpus_up, co=tot_ncpus_online))
-    print(sum_jobs_formatstr.format(j=tot_jobs))
+    print(sum_jobs_formatstr.format(jr=tot_jobs_running, jq=tot_jobs_queued, jt=tot_jobs))
 
 
 def print_node_line(bare, color, node, freecpustr, memstr, job_desc):
