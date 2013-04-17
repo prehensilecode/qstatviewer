@@ -8,7 +8,7 @@ Misc. functions and global objects for qstatviewer
 
 import os, sys, re, datetime
 
-__version__ = '0.9.8'
+__version__ = '0.9.9'
 
 # from Torque source: src/include/pbs_job.h
 # JOB_STATE_TRANSIT 0
