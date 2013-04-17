@@ -35,7 +35,17 @@ class Node:
         pbsnodes_dict = dict(pbsnodes_dict)
 
         self.name = name
-        self.state = pbsnodes_dict['state'][0] # string
+        #  self.state is a string -- this is not completely accurate since a node may have two 
+        #  states, e.g. both 'down' and 'offline'. Punt till later.
+        self.state = 'unknown'
+        if 'down' in pbsnodes_dict['state']:
+            self.state = 'down'
+        elif 'offline' in pbsnodes_dict['state']:
+            self.state = 'offline'
+        elif 'free' in pbsnodes_dict['state']:
+            self.state = 'free'
+        elif 'busy' in pbsnodes_dict['state'] or 'job-exclusive' in pbsnodes_dict['state']:
+            self.state = 'busy'
         self.ntype = pbsnodes_dict['ntype'][0] # string -- node type
         self.np = int(pbsnodes_dict['np'][0])  # integer -- no. of processors
         self.properties = pbsnodes_dict['properties']  # list of node properties/features (strings)

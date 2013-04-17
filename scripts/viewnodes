@@ -64,7 +64,7 @@ END = '\033[0m'
 
 debug_p = False
 
-def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free=False, 
+def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False, free=False, 
          jobsubstr=None, bare=False, totalmem=False, ids_only=False,
          users=False):
     global debug_p
@@ -121,7 +121,7 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
             print('')
 
         if node.state == 'down':
-            if all:
+            if allnodes:
                 if bare:
                     color = ''
                     end = ''
@@ -134,7 +134,7 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
             tot_nnode_up += 1
             tot_ncpus_up += node.ncpus
 
-            if not node.state == 'offline':
+            if node.state != 'offline':
                 tot_nnode_online += 1
                 tot_ncpus_online += node.ncpus
 
@@ -197,6 +197,11 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                 if debug_p:
                     print 'DEBUG: clan_match_p = ', clan_match_p
 
+            if not free:
+                free_match_p = True
+            else:
+                free_match_p = node.state == 'free'
+
             if not jobsubstr:
                 jobsubstr_match_p = True
             else:
@@ -210,7 +215,7 @@ def main(mem=None, procs=None, net=None, clan=None, all=False, short=False, free
                 print 'net_match_p = %s' % (net_match_p)
                 print 'clan_match_p = %s%s' % (clan_match_p, END)
 
-            match_p = mem_match_p and procs_match_p and net_match_p and clan_match_p
+            match_p = mem_match_p and procs_match_p and net_match_p and clan_match_p and free_match_p
 
             occupiedcpustr = "{0}/{1}".format(node.ncpus - node.free_cpus(), node.ncpus)
 
@@ -369,11 +374,14 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     debug_p = options.debug
 
+    if not (options.mem or options.procs or options.net or options.clan or options.all or options.free or options.jobsubstr):
+        options.free = True
+
     main(mem=options.mem, 
          procs=options.procs, 
          net=options.net, 
          clan=options.clan, 
-         all=options.all, 
+         allnodes=options.all, 
          short=options.short, 
          free=options.free, 
          jobsubstr=options.jobsubstr, 
@@ -381,4 +389,5 @@ if __name__ == '__main__':
          totalmem=options.totalmem, 
          ids_only=options.ids_only,
          users=options.users)
+
 
