@@ -23,7 +23,7 @@ usewt = ''
 
 formatstr = "{n:<8} | {id:<9} | {owner:>8} | {group:>14} |  {reqwt:>13.13} |  {usewt:>13.13}"
 print(formatstr.format(n="NODE", id="JOBID", owner="OWNER", group="GROUP", reqwt="REQ.WALL", usewt="CUR.WALL"))
-print("---------+--------+----------+----------------+----------------+---------------")
+print("---------+-----------+----------+----------------+----------------+---------------")
 for nodename,node in sorted(ibnodes.iteritems()):
     if node.unique_jobs:
         for j in node.unique_jobs:
