@@ -71,6 +71,16 @@ def main(q, node_list, options):
             for nodename,node in sorted(q.nodes.iteritems()):
                 if clan == node.clan:
                     node_list.append(nodename)
+    elif options.fabric:
+        if options.fabric == 'eth':
+            options.fabric = 'ethernet'
+        elif options.fabric == 'inf':
+            options.fabric = 'infiniband'
+
+        node_list = []
+        for nodename,node in sorted(q.nodes.iteritems()):
+            if node.fabric == options.fabric:
+                node_list.append(nodename)
 
     if node_list:
         node_list.sort()
@@ -89,8 +99,8 @@ def main(q, node_list, options):
 
 if __name__ == '__main__':
     usage = """usage: %prog nodename [nodename ...]
-    Show detailed information about given nodes
-    """
+    Show detailed information about given nodes"""
+
     parser = OptionParser(usage)
     parser.add_option('-l', '--long', action='store_true', dest='long',
                       default=False, help='show more information')
@@ -98,14 +108,23 @@ if __name__ == '__main__':
                       default=False, help='show information about all nodes')
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
                       help='show information about nodes in given CLAN(s) (comma-delimited, no spaces)')
+    parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
+                      help='show information about nodes with network FABRIC (eth, ethernet, inf, infiniband)')
     parser.add_option('-j', '--jobs', type='str', dest='jobs', metavar='JOBS',
                       help='show information about nodes occupied by job(s) (comma-delimited, no spaces)')
 
     (options, args) = parser.parse_args()
 
-    if not args and not (options.long or options.all or options.clan or options.jobs):
+    if not args and not (options.long or options.all or options.clan or options.fabric or options.jobs):
         parser.print_help()
         sys.exit(1)
+
+    if options.fabric:
+        options.fabric = options.fabric.lower().strip()
+        if not (options.fabric == 'eth' or options.fabric == 'ethernet' or options.fabric == 'inf' or options.fabric == 'infiniband'):
+            sys.stderr.write('fabric "{f}" not known\n'.format(f=options.fabric))
+            parser.print_help()
+            sys.exit(1)
 
     q = qv.QstatViewer()
 
