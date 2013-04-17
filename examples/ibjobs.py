@@ -21,7 +21,7 @@ group = ''
 reqwt = ''
 usewt = ''
 
-formatstr = "{n:<8} | {id:>6} | {owner:>8} | {group:>14} |  {reqwt:>13.13} |  {usewt:>13.13}"
+formatstr = "{n:<8} | {id:<9} | {owner:>8} | {group:>14} |  {reqwt:>13.13} |  {usewt:>13.13}"
 print(formatstr.format(n="NODE", id="JOBID", owner="OWNER", group="GROUP", reqwt="REQ.WALL", usewt="CUR.WALL"))
 print("---------+--------+----------+----------------+----------------+---------------")
 for nodename,node in sorted(ibnodes.iteritems()):
