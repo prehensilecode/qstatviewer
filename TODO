@@ -1,3 +1,5 @@
+* Infer number of cores occupied by jobs and display in viewnodes and nodedetail
+
 *** 2010-04-28 : need to compare output from previous committed version 
                  to working version (which has the pattern and search dicts)
     DONE
