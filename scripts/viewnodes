@@ -156,7 +156,7 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, f
         if not first_node_p and (this_clan != last_clan) and not short:
             print('')
 
-        if node.state == 'down':
+        if not short and node.state == 'down':
             if allnodes or free:
                 if bare:
                     color = ''
