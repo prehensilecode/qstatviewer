@@ -30,6 +30,7 @@ else:
         print("{0}:".format(nodename))
         for k,v in node.__dict__.iteritems():
             print("    {0:>13}    {1}".format(k, v))
+        print("    {0:>13}    {1}".format('free cpus', node.free_cpus()))
         print("\n")
 
 

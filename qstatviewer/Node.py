@@ -133,9 +133,7 @@ class Node:
     def free_cpus(self):
         """Returns the number of available CPUs"""
 
-        retval = self.ncpus
-        if not self.state == 'free':
-            retval = self.ncpus - len(self.jobs)
+        retval = self.ncpus - len(self.jobs)
         return retval
 
 

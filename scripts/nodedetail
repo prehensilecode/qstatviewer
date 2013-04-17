@@ -19,16 +19,20 @@ def print_node_detail(q, nodename, options):
     if nodename in q.nodes:
         node = q.nodes[nodename]
         print("{n:>9}:".format(n=node.name))
-        print("    State:           {s}".format(s=node.state))
-        print("    Resources:       CPUs = {c}; Mem = {mem}; Swap = {swap}; Scratch disk = {s}".format(c=node.ncpus, 
-            mem=node.physmem.pretty_print(), swap=node.totmem.pretty_print(), s=node.size[1].pretty_print()))
-        print("    Cumul. net load: {nl}".format(nl=node.netload.pretty_print()))
-        print("    Network:         {n}".format(n=node.fabric))
-        print("    Properties:      {f}".format(f=sorted(node.properties)))
+        print("    State:                {s}".format(s=node.state))
+        print("    Resources:            CPUs = {c}; RAM = {ram}; Swap = {swap}; Scratch disk = {s}".format(c=node.ncpus, 
+            ram=node.physmem.pretty_print(), swap=(node.totmem - node.physmem).pretty_print(), s=node.size[1].pretty_print()))
+        print("    Resources avail:      CPUs = {ca}; RAM+swap = {tm}".format(ca=node.free_cpus(), tm=node.availmem.pretty_print()))
+        print("    Cumul. net load:      {nl}".format(nl=node.netload.pretty_print()))
+        print("    Network:              {n}".format(n=node.fabric))
+        print("    Properties:           {f}".format(f=sorted(node.properties)))
         if options.long:
-            print("    Kernel:          {o}".format(o='.'.join(node.uname.split(' ')[2].split('.')[0:-1])))
-            print("    No. sessions:    {ns}".format(ns=node.nsessions))
-            print("    Load:            {l}".format(l=node.loadave))
+            print("    Kernel:               {o}".format(o='.'.join(node.uname.split(' ')[2].split('.')[0:-1])))
+            print("    No. sessions:         {ns}".format(ns=node.nsessions))
+            print("    Load:                 {l}".format(l=node.loadave))
+            print("    Phys. mem. (RAM):     {pm}".format(pm=node.physmem.pretty_print()))
+            print("    Tot. mem. (RAM+swap): {tm}".format(tm=node.totmem.pretty_print()))
+            print("    Avail. mem.:          {am}".format(am=node.availmem.pretty_print()))
         if len(node.unique_jobs) > 0:
             print("    Reservations:")
             for j in node.unique_jobs:

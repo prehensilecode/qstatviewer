@@ -64,14 +64,45 @@ END = '\033[0m'
 
 debug_p = False
 
-def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False, free=False, 
+def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, free=None, 
          jobsubstr=None, bare=False, totalmem=False, ids_only=False,
          users=False):
     global debug_p
 
-    qv = qstatviewer.QstatViewer()
+    ### FIXME jobsubstr not handled yet
+    jobsubstr = None
 
-    sorted_nodenames = sorted(qv.nodes.keys())
+    # These are node-selection flags:
+    # - procs -- no. of free procs is at least this
+    # - mem -- amt. of free memory is at least this
+    # - net -- net fabric is this
+    # - clan -- clan is this
+    # - free -- nodes which are free
+    # - jobsubstr -- nodes which have job matching given substr
+    # - allnodes -- all nodes: this takes precedence over all other node selection flags
+    #
+    # If no selection flags are given, want to print all nodes, but color nodes s.t.
+    # - free = green
+    # - busy = yellow
+    # - down = red
+
+    # these will be set on a per-node basis
+    procs_match_p = True
+    mem_match_p = True
+    net_match_p = True
+    clan_match_p = True
+    free_match_p = True
+    jobsubstr_match_p = True
+
+    # if no selection criteria are specified, select free nodes
+    if not mem and not procs and not net and not clan and not jobsubstr and not allnodes:
+        free = True
+
+    # these are output modifiers - they select what's printed out
+    # - bare -- no colors
+    # - totalmem -- print only total memory consumed on node
+    # - ids_only -- print only job IDs on node
+    # - users -- print only users who have job(s) on node
 
     if bare:
         green = ''
@@ -87,15 +118,20 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
     print("key: {green}green = match, {default}normal = free (but not match), {red}red = not available{end}".format(green=green, default=default, red=red, end=end))
 
     if totalmem:
-        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - est. tot. vmem usage (NB: may be inaccurate)"
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^10}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - est. tot. vmem usage (NB: may be inaccurate)"
     elif ids_only:
-        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - job IDs"
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^10}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - job IDs"
     elif users:
-        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - users"
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^10}|{mem:^8}|{net:^5}|{state:^8}| no. of jobs - users"
     else:
-        header_formatstr = "{name:^10}|{clan:^8}|{procs:^7}|{mem:^8}|{net:^5}|{state:^8}| job desc. (id, owner, name, loc/tot #procs)"
-    print header_formatstr.format(name='name', clan='clan', procs='procs', mem='mem', net='net', state='state')
-    print "----------+--------+-------+--------+-----+--------+-----------------------------------------------------------"
+        header_formatstr = "{name:^10}|{clan:^8}|{procs:^10}|{mem:^8}|{net:^5}|{state:^8}| job desc. (id, owner, name, loc/tot #procs)"
+    print header_formatstr.format(name='name', clan='clan', procs='free procs', mem='mem', net='net', state='state')
+    print "----------+--------+----------+--------+-----+--------+-----------------------------------------------------------"
+
+
+    # get the queue
+    qv = qstatviewer.QstatViewer()
+    sorted_nodenames = sorted(qv.nodes.keys())
 
 
     # totals for summary
@@ -121,7 +157,7 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
             print('')
 
         if node.state == 'down':
-            if allnodes:
+            if allnodes or free:
                 if bare:
                     color = ''
                     end = ''
@@ -138,30 +174,19 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
                 tot_nnode_online += 1
                 tot_ncpus_online += node.ncpus
 
-            # properties not asked for will always "match"
-            if not mem:
-                mem_match_p = True
-            else:
-                mem_match_p = (mem <= float(node.physmem.qty/1024))
+            mem_match_p = (mem <= float(node.physmem.qty/1024))
 
-            if not procs:
-                procs_match_p = True
-            else:
-                procs_match_p = (procs <= node.free_cpus())
+            procs_match_p = (procs <= node.free_cpus())
 
-            if not net:
-                net_match_p = True
-            else:
+            if net:
                 if net == 'eth':
                     net = 'ethernet'
                 elif net == 'inf':
                     net = 'infiniband'
-                    
+
                 net_match_p = (net == node.fabric)
 
-            if not clan:
-                clan_match_p = True
-            else:
+            if clan:
                 # re pats for handling shorthand clan names
                 clanpat = re.compile(r'^(\d{2})$')
                 bcpat = re.compile(r'^bc(\d{2})$')
@@ -197,14 +222,9 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
                 if debug_p:
                     print 'DEBUG: clan_match_p = ', clan_match_p
 
-            if not free:
-                free_match_p = True
-            else:
-                free_match_p = node.state == 'free'
+            free_match_p = (node.state == 'free')
 
-            if not jobsubstr:
-                jobsubstr_match_p = True
-            else:
+            if jobsubstr:
                 # FIXME - need to handle jobsubstr
                 jobpat = re.compile(jobsubstr)
                 jobsubstr_match_p = False
@@ -215,9 +235,10 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
                 print 'net_match_p = %s' % (net_match_p)
                 print 'clan_match_p = %s%s' % (clan_match_p, END)
 
-            match_p = mem_match_p and procs_match_p and net_match_p and clan_match_p and free_match_p
+            # do we print this node?
+            print_node_p = mem_match_p and procs_match_p and net_match_p and clan_match_p and free_match_p
 
-            occupiedcpustr = "{0}/{1}".format(node.ncpus - node.free_cpus(), node.ncpus)
+            freecpustr = "{0}/{1}".format(node.free_cpus(), node.ncpus)
 
             nodememstr = ''
             mempat = re.compile('mem(\d+)gb')
@@ -292,16 +313,18 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
             if node.state == 'offline':
                 color = YELLOW
             else:
-                if match_p:
+                if print_node_p:
                     color = GREEN
-                else:
+                elif node.state == 'free':
                     color = DEF
+                else:
+                    color = RED
 
             if not short:
-                print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
+                print_node_line(bare, color, node, freecpustr, nodememstr, job_desc)
             else:
-                if match_p:
-                    print_node_line(bare, color, node, occupiedcpustr, nodememstr, job_desc)
+                if print_node_p:
+                    print_node_line(bare, color, node, freecpustr, nodememstr, job_desc)
 
         last_clan = this_clan
         first_node_p = False
@@ -318,12 +341,12 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=False, short=False,
     print(sum_jobs_formatstr.format(j=tot_jobs))
 
 
-def print_node_line(bare, color, node, occupiedcpustr, memstr, job_desc):
+def print_node_line(bare, color, node, freecpustr, memstr, job_desc):
     njobs = len(node.unique_jobs)
     njobstr = 'jobs'
     if njobs == 1:
         njobstr = 'job '
-    formatstr = "{color}{node.name:^10}|{node.clan:^8}|{occupiedcpustr:^7}|{memstr:^8}|{node.fabric:^5.3}|{node.state:^8.6}| {njobs} {njobstr} - {job_desc:<.90}{end}"
+    formatstr = "{color}{node.name:^10}|{node.clan:^8}|{freecpustr:^10}|{memstr:^8}|{node.fabric:^5.3}|{node.state:^8.6}| {njobs} {njobstr} - {job_desc:<.90}{end}"
 
     end = END
 
@@ -331,7 +354,7 @@ def print_node_line(bare, color, node, occupiedcpustr, memstr, job_desc):
         color = ''
         end = ''
 
-    print(formatstr.format(color=color, node=node, occupiedcpustr=occupiedcpustr, 
+    print(formatstr.format(color=color, node=node, freecpustr=freecpustr, 
         memstr=memstr, njobs=njobs, njobstr=njobstr, job_desc=job_desc, end=end))
 
     
@@ -373,9 +396,6 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
     debug_p = options.debug
-
-    if not (options.mem or options.procs or options.net or options.clan or options.all or options.free or options.jobsubstr):
-        options.free = True
 
     main(mem=options.mem, 
          procs=options.procs, 

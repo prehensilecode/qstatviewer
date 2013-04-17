@@ -10,7 +10,7 @@ def main():
     pq = PBSQuery()
     nodes = pq.getnodes()
     for k,v in sorted(nodes.iteritems()):
-        print v['state']
+        print k, v['state']
     
 
 if __name__ == '__main__':
