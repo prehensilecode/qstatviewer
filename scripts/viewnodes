@@ -236,7 +236,7 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, f
                 print 'clan_match_p = %s%s' % (clan_match_p, END)
 
             # do we print this node?
-            print_node_p = mem_match_p and procs_match_p and net_match_p and clan_match_p and free_match_p
+            print_node_p = allnodes or (mem_match_p and procs_match_p and net_match_p and clan_match_p and free_match_p)
 
             freecpustr = "{0}/{1}".format(node.free_cpus(), node.ncpus)
 
