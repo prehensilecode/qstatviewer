@@ -33,12 +33,14 @@ def print_node_detail(q, nodename, options):
             print("    Phys. mem. (RAM):     {pm}".format(pm=node.physmem.pretty_print()))
             print("    Tot. mem. (RAM+swap): {tm}".format(tm=node.totmem.pretty_print()))
             print("    Avail. mem.:          {am}".format(am=node.availmem.pretty_print()))
-        if len(node.unique_jobs) > 0:
+        if not options.short and len(node.unique_jobs) > 0:
             print("    Reservations:")
             for j in node.unique_jobs:
                 job = q.jobs[j]
                 print("        {j}: Owner = {o}; Group = {g}; Time remaining = {t}".format(j=j.split('.')[0], 
                     o=job.owner, g=job.group, t=job.walltime_remaining))
+        else:
+            print("    No. of reservations:  {r}".format(r=len(node.unique_jobs)))
 
 
 def main(q, node_list, options):
@@ -108,6 +110,8 @@ if __name__ == '__main__':
     parser = OptionParser(usage)
     parser.add_option('-l', '--long', action='store_true', dest='long',
                       default=False, help='show more information')
+    parser.add_option('-s', '--short', action='store_true', dest='short',
+                      default=False, help='show less information')
     parser.add_option('-a', '--all', action='store_true', dest='all',
                       default=False, help='show information about all nodes')
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
@@ -119,7 +123,7 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if not args and not (options.long or options.all or options.clan or options.fabric or options.jobs):
+    if not args and not (options.long or options.short or options.all or options.clan or options.fabric or options.jobs):
         parser.print_help()
         sys.exit(1)
 
