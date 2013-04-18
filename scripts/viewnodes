@@ -176,67 +176,74 @@ def main(mem=None, procs=None, net=None, clan=None, allnodes=None, short=None, f
 
                 print("{color}{nodename:^10.10}| is down!!{end}".format(color=color, nodename=nodename, end=end))
         else:
-            tot_nnode_up += 1
-            tot_ncpus_up += node.ncpus
+            if node.state != 'down':
+                tot_nnode_up += 1
+                tot_ncpus_up += node.ncpus
 
-            if node.state != 'offline':
-                tot_nnode_online += 1
-                tot_ncpus_online += node.ncpus
+                if node.state != 'offline':
+                    tot_nnode_online += 1
+                    tot_ncpus_online += node.ncpus
 
-            mem_match_p = (mem <= float(node.physmem.qty/1024))
+                mem_match_p = (mem <= node.physmem.in_MiB())
+                procs_match_p = (procs <= node.free_cpus())
 
-            procs_match_p = (procs <= node.free_cpus())
+                if net:
+                    if net == 'eth':
+                        net = 'ethernet'
+                    elif net == 'inf':
+                        net = 'infiniband'
 
-            if net:
-                if net == 'eth':
-                    net = 'ethernet'
-                elif net == 'inf':
-                    net = 'infiniband'
+                    net_match_p = (net == node.fabric)
 
-                net_match_p = (net == node.fabric)
+                if clan:
+                    # re pats for handling shorthand clan names
+                    clanpat = re.compile(r'^(\d{2})$')
+                    bcpat = re.compile(r'^bc(\d{2})$')
+    
+                    gridpat = re.compile(r'^g(\d{2})$')
+                    bcgpat = re.compile(r'^bcg(\d{2})$')
 
-            if clan:
-                # re pats for handling shorthand clan names
-                clanpat = re.compile(r'^(\d{2})$')
-                bcpat = re.compile(r'^bc(\d{2})$')
+                    clan_match_p = False
 
-                gridpat = re.compile(r'^g(\d{2})$')
-                bcgpat = re.compile(r'^bcg(\d{2})$')
+                    clanlist = clan.split(',')
+                    for c in clanlist:
+                        if debug_p:
+                            print 'DEBUG: c = ', c
+                        cp = clanpat.search(c)
+                        bcp = bcpat.search(c)
+                        gp = gridpat.search(c)
+                        bcgp = bcgpat.search(c)
+                        if cp:
+                            c = ''.join(['clan', cp.group(1)])
+                        elif bcp:
+                            c = ''.join(['clan', bcp.group(1)])
+                        elif gp:
+                            c = ''.join(['grid', gp.group(1)])
+                        elif bcgp:
+                            c = ''.join(['grid', bcgp.group(1)])
+    
+                        if debug_p:
+                            print 'DEBUG: c = ', c
+                            print 'DEBUG: node.clan = ', node.clan
+    
+                        clan_match_p = (clan_match_p or (c == node.clan))
+    
+                    if debug_p:
+                        print 'DEBUG: clan_match_p = ', clan_match_p
 
+                if jobsubstr:
+                    # FIXME - need to handle jobsubstr
+                    jobpat = re.compile(jobsubstr)
+                    jobsubstr_match_p = False
+            else:
+                mem_match_p = False
+                procs_match_p = False
                 clan_match_p = False
+                jobsubstr_match_p = False
 
-                clanlist = clan.split(',')
-                for c in clanlist:
-                    if debug_p:
-                        print 'DEBUG: c = ', c
-                    cp = clanpat.search(c)
-                    bcp = bcpat.search(c)
-                    gp = gridpat.search(c)
-                    bcgp = bcgpat.search(c)
-                    if cp:
-                        c = ''.join(['clan', cp.group(1)])
-                    elif bcp:
-                        c = ''.join(['clan', bcp.group(1)])
-                    elif gp:
-                        c = ''.join(['grid', gp.group(1)])
-                    elif bcgp:
-                        c = ''.join(['grid', bcgp.group(1)])
-
-                    if debug_p:
-                        print 'DEBUG: c = ', c
-                        print 'DEBUG: node.clan = ', node.clan
-
-                    clan_match_p = (clan_match_p or (c == node.clan))
-
-                if debug_p:
-                    print 'DEBUG: clan_match_p = ', clan_match_p
 
             free_match_p = (node.state == 'free')
 
-            if jobsubstr:
-                # FIXME - need to handle jobsubstr
-                jobpat = re.compile(jobsubstr)
-                jobsubstr_match_p = False
 
             if debug_p:
                 print '%smem_match_p = %s' % (YELLOW, mem_match_p)
