@@ -134,13 +134,13 @@ def print_jobinfo(q, jobids, uorg):
     n_running = 0
 
 
-def main(user=None, group=None, summary=False):
+def main(user=None, group=None, summary=False, group_summary=False):
     global total_ncpus_used
     global total_cput_usage
     global total_mem_usage
     global n_running
 
-    if not user and not group and not summary:
+    if not user and not group and not summary and not group_summary:
         user = [getpass.getuser()]
 
     q = qv.QstatViewer()
@@ -183,8 +183,8 @@ def main(user=None, group=None, summary=False):
             sorted_jobids = sorted(groupjobs.keys())
             print_jobinfo(q, sorted_jobids, g)
     elif summary:
-        print("    USER        GROUP NCPUS     TOTAL CPU TIME")
-        print("-------- ------------ ----- ----------------------")
+        print("    USER         GROUP NCPUS     TOTAL CPU TIME")
+        print("-------- ------------- ----- ----------------------")
         users_jobs = {}
         for jobid,job in q.jobs.iteritems():
             if job.job_state == 'R':
@@ -192,9 +192,7 @@ def main(user=None, group=None, summary=False):
                     users_jobs[job.owner] = []
                 users_jobs[job.owner].append(job)
 
-        sorted_users = sorted(users_jobs.keys())
-        #for u,jlist in users_jobs.iteritems():
-        for u in sorted_users:
+        for u in sorted(users_jobs.keys()):
             group = users_jobs[u][0].group
             for job in users_jobs[u]:
                 if 'ncpus' in job.resource_list:
@@ -202,8 +200,31 @@ def main(user=None, group=None, summary=False):
                 if 'cput' in job.resources_used:
                     total_cput_usage += job.resources_used['cput']
 
+            print("{u:>8.8} {g:>13.13} {n:>5} {t:>20}".format(u=u, g=group, n=total_ncpus_used, t=total_cput_usage))
 
-            print("{u:>8.8} {g:>12.12} {n:>5} {t:>20}".format(u=u, g=group, n=total_ncpus_used, t=total_cput_usage))
+            # reset accumulators
+            total_ncpus_used = 0
+            total_cput_usage = datetime.timedelta()
+            total_mem_usage = 0.
+
+    elif group_summary:
+        print("        GROUP NCPUS     TOTAL CPU TIME")
+        print("------------- ----- ----------------------")
+        groups_jobs = {}
+        for jobid,job in q.jobs.iteritems():
+            if job.job_state == 'R':
+                if job.group not in groups_jobs:
+                    groups_jobs[job.group] = []
+                groups_jobs[job.group].append(job)
+
+        for g in sorted(groups_jobs.keys()):
+            for job in groups_jobs[g]:
+                if 'ncpus' in job.resource_list:
+                    total_ncpus_used += job.resource_list['ncpus']
+                if 'cput' in job.resources_used:
+                    total_cput_usage += job.resources_used['cput']
+
+            print("{g:>13.13} {n:>5} {t:>20}".format(g=g, n=total_ncpus_used, t=total_cput_usage))
 
             # reset accumulators
             total_ncpus_used = 0
@@ -217,10 +238,12 @@ if __name__ == '__main__':
     N.B. some jobs do not report CPU usage"""
     parser = OptionParser(usage)
     parser.add_option('-s', '--summary', action='store_true', default=False,
-                      dest='summary', help='summary of all users with running jobs')
+                      dest='summary', help='summary of all running jobs by user')
+    parser.add_option('-G', '--group-summary', action='store_true', default=False,
+                      dest='group_summary', help='summary of all running jobs by group')
     parser.add_option('-g', '--group', type='str',
                       help='jobs belonging to group GROUP; may be a comma-separated list')
     (options, args) = parser.parse_args()
 
-    main(user=args, group=options.group, summary=options.summary)
+    main(user=args, group=options.group, summary=options.summary, group_summary=options.group_summary)
 
