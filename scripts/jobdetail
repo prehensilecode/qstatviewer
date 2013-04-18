@@ -11,6 +11,8 @@ import sys
 import os
 import datetime
 import time
+import re
+import subprocess as sp
 import qstatviewer as qv
 from optparse import OptionParser
 
@@ -35,6 +37,14 @@ def print_job_detail(q, jobid, options):
                 print "    Euser:", job.euser
                 print "    Egroup:", job.egroup
         print "    State:", qv.jobstate_dict[job.state]
+        if job.state == 'Q':
+            spacepat = re.compile(r'\s+')
+            showstart = sp.Popen(["/opt/maui/bin/showstart", jobid], stderr=sp.PIPE, stdout=sp.PIPE, close_fds=True)
+            showstart_output = showstart.stdout.readlines()
+            showstart_output = re.split(spacepat, showstart_output[1].strip())
+            st = [int(t) for t in showstart_output[3].split(':')]
+            earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2], seconds=st[3])
+            print "    Est. earliest start time: {0} on {1}".format(earliest_start_time, ' '.join(showstart_output[5:]))
         print "    Resources requested:"
         #for k,v in job.resource_list.iteritems():
         #    print "        ", k, v
@@ -46,7 +56,7 @@ def print_job_detail(q, jobid, options):
         print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
         if job.extra:
             print "         X:           ", job.extra
-        if job.state == 'R':
+        elif job.state == 'R':
             print "    Resources used:" 
             if job.resources_used:
                 print "         Mem:          {mem:>11}".format(mem=job.resources_used['mem'].pretty_print())
