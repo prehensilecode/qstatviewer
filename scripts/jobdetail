@@ -43,11 +43,12 @@ def print_job_detail(q, jobid, options):
             showstart_output = showstart.stdout.readlines()
             showstart_output = re.split(spacepat, showstart_output[1].strip())
             st = [int(t) for t in showstart_output[3].split(':')]
-            if st[0] == 0 and st[1] == 0 and st[2] == 0 and st[3] == 0:
-                print("    Est. earliest start time: now")
-            else:
+            if len(st) == 3:
+                earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2])
+                print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
+            elif len(st) == 4:
                 earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2], seconds=st[3])
-                print("    Est. earliest start time: {0} on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
+                print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
         print "    Resources requested:"
         #for k,v in job.resource_list.iteritems():
         #    print "        ", k, v
