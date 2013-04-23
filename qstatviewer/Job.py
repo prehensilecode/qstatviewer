@@ -61,6 +61,7 @@ class Job:
         self.server = pbsjobs_dict['server'][0]
         self.checkpoint = pbsjobs_dict['Checkpoint'][0]
 
+        # ctime = time job was created
         self.ctime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['ctime'][0]))
 
         self.error_path = pbsjobs_dict['Error_Path'][0]
@@ -104,11 +105,13 @@ class Job:
         else:
             self.mail_users = None
 
+        # mtime = ???
         self.mtime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['mtime'][0]))
 
         self.output_path = pbsjobs_dict['Output_Path'][0]
         self.priority = int(pbsjobs_dict['Priority'][0])
 
+        # qtime = time job became eligible to run
         self.qtime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['qtime'][0]))
 
         
@@ -195,6 +198,7 @@ class Job:
 
         ### End admin properties
 
+        # etime = time job was queued (entered the queue)
         self.etime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['etime'][0]))
 
         if 'exit_status' in pbsjobs_dict:

@@ -247,17 +247,27 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     
         print("")
 
+    # mean walltime
+    wtreq_mean = 0.
+    for wt in walltimes_req:
+        wtreq_mean += (wt.days * 86400. + wt.seconds)
+    wtreq_mean /= len(walltimes_req)
+    wtreq_mean = datetime.timedelta(seconds=int(wtreq_mean))  # drop fractional seconds
+
+    # mean ncpus
+    ncpus_mean = 0.
+    for nc in ncpus_req:
+        ncpus_mean += nc
+    ncpus_mean /= len(ncpus_req)
+
     if walltimes_req and ncpus_req:
         print("Min. walltime request: {w:>19}        Min. no. of CPUs: {n:>3d}".format(w=min(walltimes_req), n=min(ncpus_req)))
         print("Max. walltime request: {w:>19}        Max. no. of CPUs: {n:>3d}".format(w=max(walltimes_req), n=max(ncpus_req)))
+        print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=wtreq_mean, n=ncpus_mean))
     elif walltimes_req:
         print("Min. walltime request: {w:>19}".format(w=min(walltimes_req)))
         print("Max. walltime request: {w:>19}".format(w=max(walltimes_req)))
-
-        wt = []
-        for w in walltimes_req:
-            wt.append(total_seconds(w))  # drop fractional seconds
-        print("Mean walltime request: {w:>19}        Mean no. of CPUs: {n:>6.2f}".format(w=datetime.timedelta(seconds=(sum(wt)/len(wt))), n=(sum(ncpus_req)/float(len(ncpus_req)))))
+        print("Mean walltime request: {w:>19}".format(w=wtreq_mean))
 
 
 def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None):
