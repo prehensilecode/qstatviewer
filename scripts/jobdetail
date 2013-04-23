@@ -60,7 +60,8 @@ def print_job_detail(q, jobid, options):
         print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
         if job.extra:
             print "         X:           ", job.extra
-        elif job.state == 'R':
+
+        if job.state == 'R':
             print "    Resources used:" 
             if job.resources_used:
                 print "         Mem:          {mem:>11}".format(mem=job.resources_used['mem'].pretty_print())
@@ -111,11 +112,16 @@ def print_job_detail(q, jobid, options):
                 print "    Keep files:", job.keep_files
                 print "    Mail points:", job.mail_points
                 print "    Exec host:", job.exec_host
-                print "    Ctime:", job.ctime
-                print "    Etime:", job.etime
-                print "    Qtime:", job.qtime
-                print "    Mtime:", job.mtime
-                print "    Start time:", job.start_time
+
+        if options.long:
+            print "    Job created:        ", job.ctime
+            print "    Job queued:         ", job.etime
+            print "    Job eligible to run:", job.qtime
+            print "    Mtime:              ", job.mtime
+
+            if job.state == 'R':
+                print "    Start time:         ", job.start_time
+
     else:
         print "No such job id:", jobid
         sys.exit(1)
