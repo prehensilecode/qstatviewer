@@ -68,6 +68,7 @@ class Memory:
     def str_in_MiB(self):
         qty = self.in_MiB()
         units = self.__MiB
+        formatstr = ""
         if qty < 1:
             formatstr = "{qty:.2e} {units:3.3}"
         else:
@@ -107,6 +108,7 @@ class Memory:
             qty = self.in_GiB()
             units = self.__GiB
 
+        formatstr = ""
         if qty < 1:
             formatstr = "{qty:.2e} {units:<}"
         else:
@@ -142,12 +144,12 @@ class Memory:
 
     
     def __repr__(self):
-        fmtstr = "{qty:.2f} {units:3.3}"
+        formatstr = "{qty:.2f} {units:3.3}"
         if self.qty < 1:
             formatstr = "{qty:.2e} {units:3.3}"
         else:
             formatstr = "{qty:.2f} {units:3.3}"
-        return fmtstr.format(qty=self.qty, units=self.units)
+        return formatstr.format(qty=self.qty, units=self.units)
 
 
     def __str__(self):
