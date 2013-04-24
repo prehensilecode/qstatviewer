@@ -78,11 +78,12 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     mem_req = []
     walltimes_req = []
     longest_walltime = datetime.timedelta(seconds=0)
+    longest_wait = datetime.timedelta(seconds=0)
 
     print('{0}:'.format(qv.pbsquery.server))
-    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>11} {treq:>16}  S {tel:>16}  {ctime:>19}".format(j="JOB ID", u="USERNAME", 
-        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME", ctime="JOB CREATED"));
-    print("---------------------------------------------------------------------------------------------------------------------------------------------------------------")
+    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>11} {treq:>16}  S {tel:>16}  {ctime:>24}".format(j="JOB ID", u="USERNAME", 
+        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME", ctime="CREATED ON/WAITING FOR"));
+    print("--------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
     # print_this_p also tells us when a job matches criteria, and so
     # the job's info should be figured into the summary stats
@@ -173,12 +174,32 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                 n_jobs_queued += 1
                 elapse = 'n/a'
                 job_fabric = 'n/a'
+                wait = datetime.datetime.now() - j.ctime
+                if wait > longest_wait:
+                    longest_wait = wait
 
-        formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {job.ctime}"
+        #formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {job.ctime}"
 
-        if print_this_p:
-            print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), wallt=wallt_str, elapse=elapse))
-            print_this_p = False
+        waittime_list = []
+        if j.state == 'Q':
+            now = datetime.datetime.now()
+            waiting = now - j.ctime
+            waiting = datetime.timedelta(days=waiting.days, seconds=waiting.seconds)  # drop the microseconds
+            waittime_list.append(waiting)
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
+            if print_this_p:
+                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), wallt=wallt_str, elapse=elapse, waiting=waiting))
+                print_this_p = False
+        elif j.state == 'R':
+            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {ctime:>24}"
+            if print_this_p:
+                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), wallt=wallt_str, elapse=elapse, ctime=str(j.ctime)))
+                print_this_p = False
+
+
+        #if print_this_p:
+        #    print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), wallt=wallt_str, elapse=elapse))
+        #    print_this_p = False
 
     #
     # summary
@@ -212,6 +233,9 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     if n_jobs_running > 0:
         print("Longest running job: {t:>17}".format(t=longest_walltime))
 
+    if n_jobs_queued > 0:
+        longest_wait = datetime.timedelta(days=longest_wait.days, seconds=longest_wait.seconds)
+        print("Longest waiting time in queue: {t:>17}".format(t=longest_wait))
 
     tot_nodes = 0
     tot_cpus = 0

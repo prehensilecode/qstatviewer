@@ -38,6 +38,9 @@ def print_job_detail(q, jobid, options):
                 print "    Egroup:", job.egroup
         print "    State:", qv.jobstate_dict[job.state]
         if job.state == 'Q':
+            wait = datetime.datetime.now() - job.ctime
+            wait = datetime.timedelta(days=wait.days, seconds=wait.seconds)
+            print("    Waiting for: {0}".format(wait))
             spacepat = re.compile(r'\s+')
             showstart = sp.Popen(["/opt/maui/bin/showstart", jobid], stderr=sp.PIPE, stdout=sp.PIPE, close_fds=True)
             showstart_output = showstart.stdout.readlines()
