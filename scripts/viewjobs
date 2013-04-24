@@ -89,6 +89,11 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     # the job's info should be figured into the summary stats
     print_this_p = False
 
+    match_user_p = False
+    match_group_p = False
+    match_state_p = False
+    match_fabric_p = False
+
     dayspat = re.compile('\ days?,')
 
     for jobid, j in sorted(qv.jobs.iteritems()):
@@ -96,7 +101,6 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
         ntasks = j.resource_list['ncpus']
         mem    = j.resource_list['mem']
         wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
-
 
         if user:
             if j.owner == user:
@@ -274,16 +278,18 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
 
     # mean walltime
     wtreq_mean = 0.
-    for wt in walltimes_req:
-        wtreq_mean += (wt.days * 86400. + wt.seconds)
-    wtreq_mean /= len(walltimes_req)
-    wtreq_mean = datetime.timedelta(seconds=int(wtreq_mean))  # drop fractional seconds
+    if len(walltimes_req) > 0:
+        for wt in walltimes_req:
+            wtreq_mean += (wt.days * 86400. + wt.seconds)
+        wtreq_mean /= len(walltimes_req)
+        wtreq_mean = datetime.timedelta(seconds=int(wtreq_mean))  # drop fractional seconds
 
     # mean ncpus
     ncpus_mean = 0.
-    for nc in ncpus_req:
-        ncpus_mean += nc
-    ncpus_mean /= len(ncpus_req)
+    if len(ncpus_req) > 0:
+        for nc in ncpus_req:
+            ncpus_mean += nc
+        ncpus_mean /= len(ncpus_req)
 
     if walltimes_req and ncpus_req:
         print("Min. walltime request: {w:>19}        Min. no. of CPUs: {n:>3d}".format(w=min(walltimes_req), n=min(ncpus_req)))
