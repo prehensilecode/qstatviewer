@@ -185,6 +185,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
             now = datetime.datetime.now()
             waiting = now - j.ctime
             waiting = datetime.timedelta(days=waiting.days, seconds=waiting.seconds)  # drop the microseconds
+            waiting = ' '.join(['Wait:', str(waiting)])
             waittime_list.append(waiting)
             formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
             if print_this_p:
