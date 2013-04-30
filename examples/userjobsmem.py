@@ -42,8 +42,8 @@ def main(username):
         print(formatstr.format(id=id, group=group, nnodes=nnodes, reqmem=reqmem, usevm=usevm))
     
 if __name__ == '__main__':
-    usage = """usage: %program username"""
-    parser = OptionParser()
+    usage = """usage: %prog [username]"""
+    parser = OptionParser(usage)
     (opt, args) = parser.parse_args()
 
     if not args:
