@@ -9,6 +9,7 @@ Prints out memory info on USER's jobs
 import sys
 import os
 import datetime
+import getpass
 import qstatviewer as qv
 
 from optparse import OptionParser
@@ -21,19 +22,24 @@ def main(username):
     group = 'n/a'
     reqmem = 'n/a'
     usevm = 'n/a'
+    nnodes = 0
 
     userjobs = q.jobs_by_user(username)
 
-    formatstr = "{id:<9} | {group:>14} |  {reqmem:>11.11} |  {usevm:>11.11}"
-    print(formatstr.format(id="JOBID", group="GROUP", reqmem="REQ MEM", usevm="USED MEM"))
-    print("-----------+----------------+----------------+---------------")
+    print("{n} JOBS BY {u}:".format(n=len(userjobs), u=username))
+
+    formatstr = "{id:<9} | {group:>14} | {nnodes:>7} |  {reqmem:>11.11} |  {usevm:>11.11}"
+    print(formatstr.format(id="JOBID", group="GROUP", nnodes="N.NODES", reqmem="REQ MEM", usevm="USED MEM"))
+    print("----------+----------------+---------+--------------+---------------")
     for jobid,job in sorted(userjobs.iteritems()):
         id = jobid.split('.')[0]
         group = job.group
+        if 'hosts' in job.__dict__:
+            nnodes = len(job.hosts)
         reqmem = job.resource_list['mem'].pretty_print()
         if 'vmem' in job.resources_used:
             usevm  = job.resources_used['vmem'].pretty_print()
-        print(formatstr.format(id=id, group=group, reqmem=reqmem, usevm=usevm))
+        print(formatstr.format(id=id, group=group, nnodes=nnodes, reqmem=reqmem, usevm=usevm))
     
 if __name__ == '__main__':
     usage = """usage: %program username"""
@@ -41,7 +47,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
 
     if not args:
-        print("ERROR: must give username")
-        sys.exit(1)
+        args = [getpass.getuser()]
 
     main(args[0])
+
