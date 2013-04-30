@@ -85,6 +85,16 @@ class QstatViewer:
         else:
             return None
 
+    def jobs_by_user(self, username=None):
+        """Returns a dict of jobs (keyed by jobid) belonging to username"""
+        retval = {}
+        if not username:
+            retval = None
+        else:
+            for jobid,job in self.jobs.iteritems():
+                if job.owner == username:
+                    retval[jobid] = job
+        return retval
 
     def nodes_with_property(self, prop):
         """Returns a dict of nodes (keyed by nodename) having the given property string"""
