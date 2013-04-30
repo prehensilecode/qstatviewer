@@ -150,7 +150,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                 # for some reason, some running jobs have no resources_used element
                 elapse = 'n/a'
                 job_fabric = 'n/a'
-                muse = 'n/a'
+                muse = Memory()
 
             if print_this_p:
                 n_jobs_running += 1
