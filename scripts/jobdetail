@@ -86,8 +86,8 @@ def print_job_detail(q, jobid, options):
             print "    Walltime remaining:", qv.timedeltastr(job.walltime_remaining)
 
             if options.nodes:
-                nodeheadfmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>9.9} {memavail:>9.9} {state:>6.6} {njobs:>2} {loadave:>4}"
-                nodefmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>9} {memavail:>9} {state:>6.6} {njobs:>2} {loadave:>4.1f}"
+                nodeheadfmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>10}  {memavail:>10} {state:>6.6} {njobs:>5} {loadave:>7}"
+                nodefmtstr = "    {name:>9}: {fabric:>3.3} {memphys:>10}  {memavail:>10} {state:>6.6} {njobs:>5} {loadave:>7.1f}"
                 print(nodeheadfmtstr.format(name="NAME", fabric="FABRIC", memphys="PHYSMEM", memavail="AVAILMEM", state="STATE", njobs="NJOBS", loadave="LOADAVE"))
                 for h in job.hosts:
                     print_node_detail(q, h, nodefmtstr)
@@ -139,8 +139,8 @@ def print_node_detail(q, nodename, fmtstr):
     state = node.state
     njobs = len(node.jobs)
     loadave = node.loadave
-    print(fmtstr.format(name=name, fabric=fabric, memphys=memphys, 
-        memavail=memavail, state=state, njobs=njobs, loadave=loadave))
+    print(fmtstr.format(name=name, fabric=fabric, memphys=memphys.pretty_print(), 
+        memavail=memavail.pretty_print(), state=state, njobs=njobs, loadave=loadave))
 
 def main(q, jobid_list, options):
     jobid_list.sort()
