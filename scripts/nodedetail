@@ -37,8 +37,11 @@ def print_node_detail(q, nodename, options):
             print("    Reservations:")
             for j in node.unique_jobs:
                 job = q.jobs[j]
-                print("        {j}: Owner = {o}; Group = {g}; Vmem used = {vm}; Time remaining = {t}".format(j=j.split('.')[0], 
-                    o=job.owner, g=job.group, vm=job.resources_used['vmem'].pretty_print(), t=job.walltime_remaining))
+                if job.resources_used:
+                    print("        {j}: Owner = {o}; Group = {g}; Vmem used = {vm}; Time remaining = {t}".format(j=j.split('.')[0], 
+                        o=job.owner, g=job.group, vm=job.resources_used['vmem'].pretty_print(), t=job.walltime_remaining))
+                else:
+                    print("        {j}: Owner = {o}; Group = {g}; resource data unavailable".format(j=j.split('.')[0], o=job.owner, g=job.group))
         else:
             print("    No. of reservations:  {r}".format(r=len(node.unique_jobs)))
 
