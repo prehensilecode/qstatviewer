@@ -117,6 +117,8 @@ class Node:
             self.size = pbsnodes_dict['status']['size'][0].split(':')
             self.size[0] = Memory(self.size[0])
             self.size[1] = Memory(self.size[1])
+            
+            self.scratch_disk = self.size
 
             self.arch = pbsnodes_dict['status']['arch'][0]
             self.loadave = float(pbsnodes_dict['status']['loadave'][0])
