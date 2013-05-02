@@ -44,43 +44,44 @@ class QstatViewer:
 
         self.servername = self.pbsquery.get_server_name()
 
-        self.serverinfo = self.pbsquery.get_serverinfo()[self.servername]
+        self.__serverinfo = self.pbsquery.get_serverinfo()[self.servername]
         if self.debug_p:
-            print 'FOOBAR: self.serverinfo =', self.serverinfo
-        for k,v in self.serverinfo.iteritems():
+            print 'FOOBAR: self.serverinfo =', self.__serverinfo
+        for k,v in self.__serverinfo.iteritems():
+            self.__dict__[k] = None
             if k == 'state_count':
                 # Example of state_count: Transit:0 Queued:-6458 Held:6383 Waiting:0 Running:964 Exiting:0
-                self.serverinfo[k] = {}
+                self.__dict__[k] = {}
                 vals = v[0].strip().split(' ')
                 for state in vals:
                     statename = state.split(':')[0]
                     stateval  = int(state.split(':')[1])
-                    self.serverinfo[k][statename] = stateval
+                    self.__dict__[k][statename] = stateval
             elif k == 'resources_default':
                 v['mem'] = Memory(v['mem'][0])
                 v['pmem'] = Memory(v['pmem'][0])
                 v['cput'] = pbstimestr_to_timedelta(v['cput'][0])
                 v['walltime'] = pbstimestr_to_timedelta(v['walltime'][0])
-                self.serverinfo[k] = v
+                self.__dict__[k] = v
             elif k == 'resources_assigned':
                 v['mem'] = Memory(v['mem'][0])
                 v['ncpus'] = int(v['ncpus'][0])
                 v['nodect'] = int(v['nodect'][0])
-                self.serverinfo[k] = v
+                self.__dict__[k] = v
             elif k == 'scheduling' or k == 'query_other_jobs':
                 if v[0] == 'True':
                     v[0] = True
                 elif v[0] == 'False':
                     v[0] = False
-                self.serverinfo[k] = v[0]
+                self.__dict__[k] = v[0]
             elif k == 'scheduler_iteration':
-                self.serverinfo[k] = datetime.timedelta(seconds=int(v[0]))
-            elif k == 'node_check_rate' or k == 'tcp_timeout' or k == 'total_jobs':
-                self.serverinfo[k] = int(v[0])
+                self.__dict__[k] = datetime.timedelta(seconds=int(v[0]))
+            elif k == 'next_job_number' or k == 'node_check_rate' or k == 'tcp_timeout' or k == 'total_jobs':
+                self.__dict__[k] = int(v[0])
             elif len(v) == 1:
-                self.serverinfo[k] = v[0]
+                self.__dict__[k] = v[0]
             else:
-                self.serverinfo[k] = v
+                self.__dict__[k] = v
 
         self.__make_jobs()
         self.__make_nodes()

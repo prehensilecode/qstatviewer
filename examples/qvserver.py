@@ -18,7 +18,13 @@ options, args = parser.parse_args()
 q = qv.QstatViewer()
 
 print("Server: {s}".format(s=q.servername))
-print("Server properties:")
-for k,v in sorted(q.serverinfo.iteritems()):
-    print "    ", k, v
+#print("Server properties:")
+#for k,v in sorted(q.serverinfo.iteritems()):
+#    print "    ", k, v
+
+print("")
+print("QstatViewer:")
+for k,v in sorted(q.__dict__.iteritems()):
+    if k != 'jobs' and k != 'nodes':
+        print("    {0:18.18}\t\t{1}".format(k, v))
 
