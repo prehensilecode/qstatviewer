@@ -21,7 +21,8 @@ def main(jobidlist=None, t=60):
     q_formatstr = "{id:>11} {o:>8} {s} {c:>4} {n:>3} {rwt:>12}"
     while True:
         for j in jobidlist:
-            job = q.get_job(''.join([j, '.rhel6pbs.deac.wfu.edu']))
+            #job = q.get_job('.'.join([j, q.servername]))
+            job = q.jobs['.'.join([j, q.servername])]
             if job:
                 if job.state == 'R':
                     print(r_formatstr.format(id=j, 

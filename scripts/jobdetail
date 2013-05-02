@@ -19,6 +19,7 @@ from optparse import OptionParser
 def print_job_detail(q, jobid, options):
     jobid = '.'.join([jobid, q.servername])
 
+    # FIXME - local modification needed
     headnode_dict = {'bc103bl05.deac.wfu.edu': 'rhel6head1',
                      'bc103bl06.deac.wfu.edu': 'rhel6head2',
                      'bc103bl09.deac.wfu.edu': 'rhel6head3'}
