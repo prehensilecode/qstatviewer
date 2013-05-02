@@ -19,18 +19,13 @@ from optparse import OptionParser
 def print_job_detail(q, jobid, options):
     jobid = '.'.join([jobid, q.servername])
 
-    # FIXME - local modification needed
-    headnode_dict = {'bc103bl05.deac.wfu.edu': 'rhel6head1',
-                     'bc103bl06.deac.wfu.edu': 'rhel6head2',
-                     'bc103bl09.deac.wfu.edu': 'rhel6head3'}
-
     if jobid in q.jobs:
         print("{0}:".format(jobid.split('.')[0]))
         job = q.jobs[jobid]
         print "    Name:", job.name
         print "    Owner:", job.owner
         print "    Group:", job.group_list[0]
-        print "    Owner node:", headnode_dict[job.owner_node]
+        print "    Owner node:", job.owner_node
         print "    Mail users:", job.mail_users
         if options.long:
             # euser and egroup are accessible to admin users only
