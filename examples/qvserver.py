@@ -17,11 +17,8 @@ options, args = parser.parse_args()
 
 q = qv.QstatViewer()
 
-print("There are {0} nodes".format(len(q.nodes)))
-print("")
-
-for servername,serverinfo in sorted(q.serverinfo.iteritems()):
-    print("Server: {server}".format(server=servername))
-    for k,v in sorted(serverinfo.iteritems()):
-        print "    ", k, v
+print("Server: {s}".format(s=q.servername))
+print("Server properties:")
+for k,v in sorted(q.serverinfo.iteritems()):
+    print "    ", k, v
 
