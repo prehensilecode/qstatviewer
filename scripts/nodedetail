@@ -90,7 +90,12 @@ def main(q, node_list, options):
         for nodename,node in sorted(q.nodes.iteritems()):
             if node.fabric == options.fabric:
                 node_list.append(nodename)
-
+    elif options.nodeprop:
+        node_list = []
+        for nodename,node in sorted(q.nodes.iteritems()):
+            for p in node.properties:
+                if p == options.nodeprop:
+                    node_list.append(nodename)
     if node_list:
         node_list.sort()
 
@@ -121,12 +126,15 @@ if __name__ == '__main__':
                       help='show information about nodes in given CLAN(s) (comma-delimited, no spaces)')
     parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
                       help='show information about nodes with network FABRIC (eth, ethernet, inf, infiniband)')
+    # XXX - watch out: use "nodeprop" because "property" is used by Python
+    parser.add_option('-p', '--property', type='str', dest='nodeprop', metavar='PROPERTY',
+                      help='show information about nodes with property PROPERTY (e.g. mem96gb, scr4gb)')
     parser.add_option('-j', '--jobs', type='str', dest='jobs', metavar='JOBS',
                       help='show information about nodes occupied by job(s) (comma-delimited, no spaces)')
 
     (options, args) = parser.parse_args()
 
-    if not args and not (options.long or options.short or options.all or options.clan or options.fabric or options.jobs):
+    if not args and not (options.long or options.short or options.all or options.clan or options.fabric or options.nodeprop or options.jobs):
         parser.print_help()
         sys.exit(1)
 
