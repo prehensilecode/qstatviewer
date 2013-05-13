@@ -20,7 +20,7 @@ def print_node_detail(q, nodename, options):
         node = q.nodes[nodename]
         print("{n:>9}:".format(n=node.name))
         print("    State:                {s}".format(s=node.state))
-        print("    Resources:            CPUs = {c}; RAM = {ram}; Swap = {swap}; Scratch disk = {s}".format(c=node.ncpus, 
+        print("    Resources:            CPUs = {c}; GPUs = {g}; RAM = {ram}; Swap = {swap}; Scratch disk = {s}".format(c=node.ncpus, g=node.gpus,
             ram=node.physmem.pretty_print(), swap=(node.totmem - node.physmem).pretty_print(), s=node.scratch_disk['total'].pretty_print()))
         print("    Resources avail:      CPUs = {ca}; RAM+swap = {tm}; Scratch disk = {s}".format(ca=node.free_cpus(), tm=node.availmem.pretty_print(), s=node.scratch_disk['available'].pretty_print()))
         print("    Cumul. net load:      {nl}".format(nl=node.netload.pretty_print()))
