@@ -48,6 +48,9 @@ class Node:
             self.state = 'busy'
         self.ntype = pbsnodes_dict['ntype'][0] # string -- node type
         self.np = int(pbsnodes_dict['np'][0])  # integer -- no. of processors
+        self.gpus = 0            # integer -- no. of gpus
+        if 'gpus' in pbsnodes_dict:
+            self.gpus = int(pbsnodes_dict['gpus'][0])
         self.properties = pbsnodes_dict['properties']  # list of node properties/features (strings)
         self.opsys = ''          # string -- OS
         self.uname = ''          # string -- `uname -a`
@@ -58,7 +61,7 @@ class Node:
         self.totmem = 0          # integer -- total memory in kb : converted to memory object below
         self.availmem = 0        # integer -- available memory in kb : converted to memory object below
         self.physmem = 0         # integer -- physical memory in kb : converted to memory object below
-        self.ncpus = 8           # integer -- no. of processors
+        self.ncpus = self.np     # integer -- no. of processors
         self.loadave = 0.        # float -- load average
         self.netload = 0         # integer -- from src/resmom/linux/mom_mach.c : number of bytes transferred for all interfaces
         self.jobs = []           # list of job IDs running on node

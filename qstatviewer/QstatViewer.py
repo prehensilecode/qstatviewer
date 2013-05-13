@@ -64,12 +64,18 @@ class QstatViewer:
                 v['walltime'] = pbstimestr_to_timedelta(v['walltime'][0])
                 self.__dict__[k] = v
             elif k == 'resources_assigned':
-                v['mem'] = Memory(v['mem'][0])
+                if 'mem' in v:
+                    v['mem'] = Memory(v['mem'][0])
+
                 if 'vmem' in v:
                     v['vmem'] = Memory(v['vmem'][0])
+
                 if 'ncpus' in v:
                     v['ncpus'] = int(v['ncpus'][0])
-                v['nodect'] = int(v['nodect'][0])
+                
+                if 'nodect' in v:
+                    v['nodect'] = int(v['nodect'][0])
+
                 self.__dict__[k] = v
             elif k == 'scheduling' or k == 'query_other_jobs':
                 if v[0] == 'True':
