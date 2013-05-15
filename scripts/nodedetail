@@ -33,6 +33,8 @@ def print_node_detail(q, nodename, options):
             print("    Phys. mem. (RAM):     {pm}".format(pm=node.physmem.pretty_print()))
             print("    Tot. mem. (RAM+swap): {tm}".format(tm=node.totmem.pretty_print()))
             print("    Avail. mem.:          {am}".format(am=node.availmem.pretty_print()))
+            if 'gpu_status' in node.__dict__:
+                print("    GPU status:           {gs}".format(gs=node.gpu_status))
         if not options.short and len(node.unique_jobs) > 0:
             print("    Reservations:")
             for j in node.unique_jobs:
