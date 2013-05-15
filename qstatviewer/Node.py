@@ -127,6 +127,10 @@ class Node:
 
             self.arch = pbsnodes_dict['status']['arch'][0]
             self.loadave = float(pbsnodes_dict['status']['loadave'][0])
+
+            # GPUs
+            if 'gpu_status' in pbsnodes_dict:
+                self.gpu_status = pbsnodes_dict['gpu_status']
             
             unique_jobs = set()
             if 'jobs' in pbsnodes_dict:
@@ -154,8 +158,12 @@ if __name__ == '__main__':
     for k,v in pq.getnodes().iteritems():
         nodes[k] = Node(name=k, pbsnodes_dict=dict(v))
 
-    for k,v in nodes.iteritems():
-        print k, ': ', v
-        print "Name = %s, State = %s, Free CPUs = %d, Clan = %s, Fabric = %s" % (v.name, v.state, v.free_cpus(), v.clan, v.fabric)
+    for nodename, node in sorted(nodes.iteritems()):
+        print nodename, ': ', node
+        print "Name = %s, State = %s, Free CPUs = %d, Clan = %s, Fabric = %s" % (node.name, node.state, node.free_cpus(), node.clan, node.fabric)
+        print "     GPU status:"
+        if 'gpu_status' in node.__dict__:
+            for s in node.gpu_status:
+                print '        ', s
         print '----'
 
