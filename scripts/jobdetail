@@ -40,14 +40,17 @@ def print_job_detail(q, jobid, options):
             spacepat = re.compile(r'\s+')
             showstart = sp.Popen(["/opt/maui/bin/showstart", jobid], stderr=sp.PIPE, stdout=sp.PIPE, close_fds=True)
             showstart_output = showstart.stdout.readlines()
-            showstart_output = re.split(spacepat, showstart_output[1].strip())
-            st = [int(t) for t in showstart_output[3].split(':')]
-            if len(st) == 3:
-                earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2])
-                print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
-            elif len(st) == 4:
-                earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2], seconds=st[3])
-                print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
+            if len(showstart_output) > 2:
+                showstart_output = re.split(spacepat, showstart_output[1].strip())
+                st = [int(t) for t in showstart_output[3].split(':')]
+                if len(st) == 3:
+                    earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2])
+                    print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
+                elif len(st) == 4:
+                    earliest_start_time = datetime.timedelta(days=st[0], hours=st[1], minutes=st[2], seconds=st[3])
+                    print("    Est. earliest start time: in {0}; on {1}".format(earliest_start_time, ' '.join(showstart_output[5:])))
+            else:
+                print("    Est. earliest start time: n/a")
         print "    Resources requested:"
         #for k,v in job.resource_list.iteritems():
         #    print "        ", k, v
@@ -56,6 +59,8 @@ def print_job_detail(q, jobid, options):
         print "         Mem:         {mem:>13}".format(mem=job.resource_list['mem'].pretty_print())
         print "         VMem:        {mem:>13}".format(mem=job.resource_list['vmem'].pretty_print())
         print "         P.Mem:       {mem:>13}".format(mem=job.resource_list['pmem'].pretty_print())
+        if  'file' in job.resource_list:
+            print "         Scratch:     {scr:>13}".format(scr=job.resource_list['file'].pretty_print())
         print "         CPU time:    {0:>13}".format(qv.timedeltastr(job.resource_list['cput']))
         print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
         if job.extra:
