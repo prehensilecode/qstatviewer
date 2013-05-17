@@ -134,9 +134,13 @@ class Job:
         self.resource_list['walltime'] = pbstimestr_to_timedelta(self.resource_list['walltime'][0])
         self.resource_list['cput'] = pbstimestr_to_timedelta(self.resource_list['cput'][0])
         self.resource_list['mem'] = Memory(self.resource_list['mem'][0])
+        self.resource_list['vmem'] = Memory(self.resource_list['vmem'][0])
         self.resource_list['pmem'] = Memory(self.resource_list['pmem'][0])
         self.resource_list['arch'] = self.resource_list['arch'][0]
         self.resource_list['nodes'] = self.resource_list['nodes'][0]
+
+        if 'file' in self.resource_list:
+            self.resource_list['file'] = Memory(self.resource_list['file'][0])
 
         # resource_list['neednodes'] seems to only be available to admin users
         if 'neednodes' in self.resource_list:
