@@ -266,12 +266,7 @@ def main(mem=None, scratch=None, procs=None, net=None, clan=None, allnodes=None,
                 if mp:
                     nodememstr = ' '.join([mp.group(1), 'GiB'])
 
-            nodescrstr = ""
-            scrpat = re.compile('scr(\d+)gb')
-            for p in node.properties:
-                sp = scrpat.search(p)
-                if sp:
-                    nodescrstr = ' '.join([sp.group(1), 'GiB'])
+            nodescrstr = "{s:^2.0f} GiB".format(s=round(node.scratch_disk['total'].in_GiB()))
 
             job_desc = ''
             if totalmem:
