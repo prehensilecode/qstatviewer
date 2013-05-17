@@ -54,6 +54,7 @@ def print_job_detail(q, jobid, options):
         print "         Nodes:       ", job.resource_list['nodes']
         print "         No. of nodes:", job.resource_list['nodect']
         print "         Mem:         {mem:>13}".format(mem=job.resource_list['mem'].pretty_print())
+        print "         VMem:        {mem:>13}".format(mem=job.resource_list['vmem'].pretty_print())
         print "         P.Mem:       {mem:>13}".format(mem=job.resource_list['pmem'].pretty_print())
         print "         CPU time:    {0:>13}".format(qv.timedeltastr(job.resource_list['cput']))
         print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
