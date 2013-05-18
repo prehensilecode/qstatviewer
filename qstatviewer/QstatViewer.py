@@ -21,6 +21,7 @@ from qstatviewer.config import __version__, jobstate_dict, nodestate_dict, conve
 from qstatviewer.Node import Node
 from qstatviewer.Job import Job
 from qstatviewer.Node import Memory
+from qstatviewer.Queue import Queue
 
 class QstatViewer:
     """
@@ -39,6 +40,7 @@ class QstatViewer:
 
         self.nodes = {}
         self.jobs = {}
+        self.queues = {}
 
         self.pbsquery = PBSQuery(pbs_server)
 
@@ -92,6 +94,7 @@ class QstatViewer:
             else:
                 self.__dict__[k] = v
 
+        self.__make_queues()
         self.__make_jobs()
         self.__make_nodes()
 
@@ -121,6 +124,11 @@ class QstatViewer:
         for j,p in rawjobs.iteritems():
             self.jobs[j] = Job(id=j, pbsjobs_dict=dict(p), debug_p=self.debug_p)
 
+    def __make_queues(self):
+        """make dict with queue names as keys, and queue properties as values"""
+        rawqueues = self.pbsquery.getqueues()
+        for q,p in rawqueues.iteritems():
+            self.queues[q] = Queue(name=q, pbsqueue_dict=p)
 
     def get_job(self, jobid):
         """Queries the queue for jobid"""
@@ -182,5 +190,6 @@ class QstatViewer:
 
 if __name__ == '__main__':
     qv = QstatViewer(debug_p=False)
-    j = qv.get_job('164062[1]')
+    j = qv.get_job('296561')
     print j
+
