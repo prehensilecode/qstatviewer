@@ -55,20 +55,22 @@ class Node:
         self.opsys = ''          # string -- OS
         self.uname = ''          # string -- `uname -a`
         self.sessions = ''       # list of integers -- session IDs
-        self.nsessions = ''      # integer -- number of sessions
+        self.nsessions = 0       # integer -- number of sessions
         self.nusers = 0          # integer - no. of users
-        self.idletime = 0        # integer -- no. of seconds idle (?) : converted to timedelta below
-        self.totmem = 0          # integer -- total memory in kb : converted to memory object below
-        self.availmem = 0        # integer -- available memory in kb : converted to memory object below
-        self.physmem = 0         # integer -- physical memory in kb : converted to memory object below
+        self.idletime = datetime.timedelta(seconds=0)
+                                 # integer -- no. of seconds idle (?) : converted to timedelta below
+        self.totmem = Memory(0)  # integer -- total memory in kb : converted to memory object below
+        self.availmem = Memory(0)# integer -- available memory in kb : converted to memory object below
+        self.physmem = Memory(0) # integer -- physical memory in kb : converted to memory object below
         self.ncpus = self.np     # integer -- no. of processors
         self.loadave = 0.        # float -- load average
-        self.netload = 0         # integer -- from src/resmom/linux/mom_mach.c : number of bytes transferred for all interfaces
+        self.netload = Memory(0) # integer -- from src/resmom/linux/mom_mach.c : number of bytes transferred for all interfaces
         self.jobs = []           # list of job IDs running on node
         self.unique_jobs = set() # set of job IDs running on node
         self.varattr = ''        # list - non-functional - see http://www.clusterresources.com/torquedocs21/a.cmomconfig.shtml
                                  #        and http://www.clusterresources.com/pipermail/torquedev/2008-October/001228.html
-        self.rectime = 0         # integer -- ??
+        self.rectime = datetime.timedelta(seconds=0)
+                                 # integer -- ??
 
         self.name = name
 
