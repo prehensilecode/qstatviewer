@@ -96,7 +96,10 @@ def print_jobinfo(q, jobids, uorg):
                 print(formatstr.format(k=k, v=v))
 
             k = 'cput'
-            print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))
+            if k in ru:
+                print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))
+            else:
+                print(run_formatstr.format(k=k, v=rl[k], v2='n/a'))
 
             k = 'walltime'
             print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))

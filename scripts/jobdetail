@@ -71,7 +71,10 @@ def print_job_detail(q, jobid, options):
             if job.resources_used:
                 print("         Mem:        {0:>13}".format(job.resources_used['mem'].pretty_print()))
                 print("         V.Mem:      {0:>13}".format(job.resources_used['vmem'].pretty_print()))
-                print("         CPU time:   {0:>13}".format(qv.timedeltastr(job.resources_used['cput'])))
+                if 'cput' in job.resources_used:
+                    print("         CPU time:   {0:>13}".format(qv.timedeltastr(job.resources_used['cput'])))
+                else:
+                    print("         CPU time:   n/a")
                 print("         Walltime:   {0:>13}".format(qv.timedeltastr(job.resources_used['walltime'])))
             else:
                 print "         Not yet available"
