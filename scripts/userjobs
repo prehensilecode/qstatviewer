@@ -80,11 +80,20 @@ def print_jobinfo(q, jobids, uorg):
             v2 = ru[k].pretty_print()
             print(run_formatstr.format(k=k, v=v, v2=v2))
 
-            k = 'pmem'
+            k = 'vmem'
             v = rl[k].pretty_print()
             k2 = 'vmem'
             v2 = ru[k2].pretty_print()
             print(run2_formatstr.format(k=k, k2=k2, v=v, v2=v2))
+
+            k = 'pmem'
+            v = rl[k].pretty_print()
+            print(formatstr.format(k=k, v=v))
+
+            k = 'file'
+            if k in rl:
+                v = rl[k].pretty_print()
+                print(formatstr.format(k=k, v=v))
 
             k = 'cput'
             print(run_formatstr.format(k=k, v=rl[k], v2=ru[k]))
@@ -108,7 +117,7 @@ def print_jobinfo(q, jobids, uorg):
             v = rl[k].pretty_print()
             print(formatstr.format(k=k, v=v))
 
-            k = 'pmem'
+            k = 'vmem'
             v = rl[k].pretty_print()
             print(formatstr.format(k=k, v=v))
 
