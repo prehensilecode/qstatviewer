@@ -35,16 +35,26 @@ class Queue:
 
         if self.queue_type == 'Routing':
             self.route_destinations = pbsqueue_dict['route_destinations']
+        elif self.queue_type == 'Execution':
+            queue_props = ['max_user_queuable', 'max_queuable', 'total_jobs']
+            for p in queue_props:
+                 self.__dict__[p] = int(pbsqueue_dict[p][0])
 
-        queue_props = ['acl_groups', 'resources_default' ]
-        for p in queue_props:
-            if p in pbsqueue_dict:
-                self.__dict__[p] = pbsqueue_dict[p]
+            self.resources_default = {}
+            for k,v in pbsqueue_dict['resources_default'].iteritems():
+                if k == 'arch':
+                    self.resources_default[k] = v[0]
 
-        queue_props = ['max_user_queuable', 'max_queuable', 'total_jobs']
-        for p in queue_props:
-            if p in pbsqueue_dict:
-                self.__dict__[p] = int(pbsqueue_dict[p][0])
+            if 'resources_assigned' in pbsqueue_dict:
+                self.resources_assigned = {}
+                for k,v in pbsqueue_dict['resources_assigned'].iteritems():
+                    if k == 'mem' or k == 'vmem':
+                        self.resources_assigned[k] = Memory(v[0])
+                    elif k == 'ncpus' or k == 'nodect':
+                        self.resources_assigned[k] = int(v[0])
+
+        if 'acl_groups' in pbsqueue_dict:
+            self.acl_groups = pbsqueue_dict['acl_groups']
 
         if 'mtime' in pbsqueue_dict:
             self.mtime = datetime.datetime.fromtimestamp(int(pbsqueue_dict['mtime'][0]))
@@ -62,6 +72,7 @@ class Queue:
             for s in state_counts:
                 name, count = s.split(':')
                 self.state_count[name] = int(count)
+
 
 
     def __str__(self):

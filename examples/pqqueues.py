@@ -8,6 +8,7 @@ from PBSQuery import PBSQuery
 def main():
     pq = PBSQuery()
     queuedict = pq.getqueues()
+    print queuedict
     for queuename, queue in sorted(queuedict.iteritems()):
         print queuename
         for k, v in queue.iteritems():
