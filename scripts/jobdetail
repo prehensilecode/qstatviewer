@@ -54,13 +54,13 @@ def print_job_detail(q, jobid, options):
         print "    Resources requested:"
         #for k,v in job.resource_list.iteritems():
         #    print "        ", k, v
-        print "         Nodes:       ", job.resource_list['nodes']
-        print "         No. of nodes:", job.resource_list['nodect']
-        print "         Mem:         {mem:>13}".format(mem=job.resource_list['mem'].pretty_print())
-        print "         VMem:        {mem:>13}".format(mem=job.resource_list['vmem'].pretty_print())
-        print "         P.Mem:       {mem:>13}".format(mem=job.resource_list['pmem'].pretty_print())
+        print("         Nodes:       {0:>20}".format(job.resource_list['nodes']))
+        print("         No. of nodes:{0:>3d}".format(job.resource_list['nodect']))
+        print("         Mem:         {0:>13}".format(job.resource_list['mem'].pretty_print()))
+        print("         VMem:        {0:>13}".format(job.resource_list['vmem'].pretty_print()))
+        print("         P.Mem:       {0:>13}".format(job.resource_list['pmem'].pretty_print()))
         if  'file' in job.resource_list:
-            print "         Scratch:     {scr:>13}".format(scr=job.resource_list['file'].pretty_print())
+            print "         Scratch:     {0:>13}".format(job.resource_list['file'].pretty_print())
         print "         CPU time:    {0:>13}".format(qv.timedeltastr(job.resource_list['cput']))
         print "         Walltime:    {0:>13}".format(qv.timedeltastr(job.resource_list['walltime']))
         if job.extra:
@@ -69,10 +69,10 @@ def print_job_detail(q, jobid, options):
         if job.state == 'R':
             print "    Resources used:" 
             if job.resources_used:
-                print "         Mem:          {mem:>11}".format(mem=job.resources_used['mem'].pretty_print())
-                print "         V.Mem:        {mem:>11}".format(mem=job.resources_used['vmem'].pretty_print())
-                print "         CPU time:    ", qv.timedeltastr(job.resources_used['cput'])
-                print "         Walltime:    ", qv.timedeltastr(job.resources_used['walltime'])
+                print("         Mem:        {0:>13}".format(job.resources_used['mem'].pretty_print()))
+                print("         V.Mem:      {0:>13}".format(job.resources_used['vmem'].pretty_print()))
+                print("         CPU time:   {0:>13}".format(qv.timedeltastr(job.resources_used['cput'])))
+                print("         Walltime:   {0:>13}".format(qv.timedeltastr(job.resources_used['walltime'])))
             else:
                 print "         Not yet available"
 
