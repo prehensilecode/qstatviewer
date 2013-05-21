@@ -119,13 +119,15 @@ class Node:
             # This is actually amount of scratch: 
             #   from src/resmom/linux/mom_mach.c: **  size  size of a file or filesystem
             # probably size[0] = avail, size[1] = total, because size[0] < size[1]
-            self.size = pbsnodes_dict['status']['size'][0].split(':')
-            self.size[0] = Memory(self.size[0])
-            self.size[1] = Memory(self.size[1])
+
+            if 'size' in pbsnodes_dict['status']:
+                self.size = pbsnodes_dict['status']['size'][0].split(':')
+                self.size[0] = Memory(self.size[0])
+                self.size[1] = Memory(self.size[1])
             
-            self.scratch_disk = {}
-            self.scratch_disk['available'] = self.size[0]
-            self.scratch_disk['total'] = self.size[1]
+                self.scratch_disk = {}
+                self.scratch_disk['available'] = self.size[0]
+                self.scratch_disk['total'] = self.size[1]
 
             self.arch = pbsnodes_dict['status']['arch'][0]
             self.loadave = float(pbsnodes_dict['status']['loadave'][0])
