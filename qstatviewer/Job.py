@@ -136,7 +136,10 @@ class Job:
         self.resource_list['mem'] = Memory(self.resource_list['mem'][0])
         self.resource_list['vmem'] = Memory(self.resource_list['vmem'][0])
         self.resource_list['pmem'] = Memory(self.resource_list['pmem'][0])
-        self.resource_list['arch'] = self.resource_list['arch'][0]
+
+        if 'arch' in self.resource_list:
+            self.resource_list['arch'] = self.resource_list['arch'][0]
+
         self.resource_list['nodes'] = self.resource_list['nodes'][0]
 
         if 'file' in self.resource_list:
@@ -162,7 +165,10 @@ class Job:
         # remaining walltime
         self.walltime_remaining = 0
         if 'Walltime' in pbsjobs_dict:
-            self.walltime_remaining = datetime.timedelta(seconds=int(pbsjobs_dict['Walltime']['Remaining'][0]))
+            wt_remaining_seconds = int(pbsjobs_dict['Walltime']['Remaining'][0])
+            # sometimes, this field gets corrupted with an impossible value
+            if wt_remaining_seconds < sys.maxint:
+                self.walltime_remaining = datetime.timedelta(seconds=int(pbsjobs_dict['Walltime']['Remaining'][0]))
 
         ###
         ### These properties are available only to admin user:
@@ -203,7 +209,10 @@ class Job:
         ### End admin properties
 
         # etime = time job was queued (entered the queue)
-        self.etime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['etime'][0]))
+        if 'etime' in pbsjobs_dict:
+            self.etime = datetime.datetime.fromtimestamp(int(pbsjobs_dict['etime'][0]))
+        else:
+            self.etime = None
 
         if 'exit_status' in pbsjobs_dict:
             self.exit_status = int(pbsjobs_dict['exit_status'][0])
