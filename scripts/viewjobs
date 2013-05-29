@@ -17,11 +17,11 @@ from qstatviewer.Memory import Memory
 
 def jobs_on_nodes(qv):
     print('{0}:'.format(qv.pbsquery.server))
-    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {f:^5.3} NODES ".format(j="JOB ID", u="USERNAME", 
+    print("{j:<12} {u:<8} {g:>13} {q:<9} {jn:^24} {f:^5.3} NODES ".format(j="JOB ID", u="USERNAME", 
         g="GROUP", q="QUEUE", jn="JOBNAME", f="NET"));
-    print("-----------------------------------------------------------------------------------------------------------------")
+    print("------------------------------------------------------------------------------------------------------------------")
     jobfabric = ''
-    formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {fab:^5.3}"
+    formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {fab:^5.3}"
     tmpset = set()
     for id in sorted(qv.jobs.keys()):
         job = qv.jobs[id]
@@ -66,7 +66,7 @@ def total_seconds(td):
     return (td.days * 86400 + td.seconds)
 
 
-def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
+def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queue=None):
     n_jobs_running = 0
     n_jobs_queued = 0
     nodes_req = []
@@ -81,9 +81,9 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     longest_wait = datetime.timedelta(seconds=0)
 
     print('{0}:'.format(qv.pbsquery.server))
-    print("{j:<11} {u:<8} {g:>13} {q:<8} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>11} {muse:>11} {treq:>16}  S {tel:>16}  {ctime:>24}".format(j="JOB ID", u="USERNAME", 
+    print("{j:<12} {u:<8} {g:>13} {q:<9} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>11} {muse:>11} {treq:>16}  S {tel:>16}  {ctime:>24}".format(j="JOB ID", u="USERNAME", 
         g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", muse="USE MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME", ctime="CREATED ON/WAITING FOR"));
-    print("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
     # print_this_p also tells us when a job matches criteria, and so
     # the job's info should be figured into the summary stats
@@ -93,6 +93,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
     match_group_p = False
     match_state_p = False
     match_fabric_p = False
+    match_queue_p = False
 
     dayspat = re.compile('\ days?,')
 
@@ -129,6 +130,9 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
                     if qv.nodes[hostlist[n]].fabric == fabric:
                         print_this_p = True
                         break
+        elif queue:
+            if j.queue == queue:
+                print_this_p = True
         elif all:
             print_this_p = True
         else:
@@ -194,12 +198,12 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None):
             waiting = datetime.timedelta(days=waiting.days, seconds=waiting.seconds)  # drop the microseconds
             waiting = ' '.join(['Wait:', str(waiting)])
             waittime_list.append(waiting)
-            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
+            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
             if print_this_p:
                 print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), muse='n/a', wallt=wallt_str, elapse=elapse, waiting=waiting))
                 print_this_p = False
         elif j.state == 'R':
-            formatstr = "{ji:<11} {job.owner:<8.8} {job.group:>13.13} {job.queue:<8.8} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {ctime:>24}"
+            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {ctime:>24}"
             if print_this_p:
                 print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), muse=muse.pretty_print(), wallt=wallt_str, elapse=elapse, ctime=str(j.ctime)))
                 print_this_p = False
@@ -327,6 +331,8 @@ if __name__ == '__main__':
                       default=False, help='displays nodes occupied by job')
     parser.add_option('-f', '--fabric', dest='fabric', type='str',
                       help='displays jobs running on network FABRIC type (inf, infiniband, eth, ethernet)')
+    parser.add_option('-q', '--queue', dest='queue', type='str',
+                      help='displays only jobs in queue QUEUE')
     (options, args) = parser.parse_args()
 
     # if no username given, and no options specified, then view user's own jobs

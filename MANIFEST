@@ -4,11 +4,13 @@ qstatviewer/Job.py
 qstatviewer/Node.py
 qstatviewer/Queue.py
 qstatviewer/QstatViewer.py
+qstatviewer/Server.py
 qstatviewer/Memory.py
 qstatviewer/__init__.py
 qstatviewer/config.py
 scripts/viewnodes
 scripts/viewjobs
+scripts/viewqueues
 scripts/userjobs
 scripts/users_on_node
 scripts/jobinfo_node

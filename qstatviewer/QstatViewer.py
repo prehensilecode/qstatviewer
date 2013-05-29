@@ -22,6 +22,7 @@ from qstatviewer.Node import Node
 from qstatviewer.Job import Job
 from qstatviewer.Node import Memory
 from qstatviewer.Queue import Queue
+from qstatviewer.Server import Server
 
 class QstatViewer:
     """
@@ -46,6 +47,44 @@ class QstatViewer:
 
         self.servername = self.pbsquery.get_server_name()
 
+        self.__make_server()
+        self.__make_queues()
+        self.__make_jobs()
+        self.__make_nodes()
+
+
+    def __make_nodes(self):
+        """Make dict with node names as keys, and list of job objects as values"""
+
+        # make list of jobids running on the node
+        #node_jobs = {}
+        #for jobid,job in self.jobs.iteritems():
+        #    if job.exec_host:
+        #        for node_cpu in job.exec_host:
+        #            node = node_cpu.split('/')[0]
+        #            if node not in node_jobs:
+        #                node_jobs[node] = []
+        #            else:
+        #                node_jobs[node].append(jobid)
+
+        rawnodes = self.pbsquery.getnodes()
+        for n,s in rawnodes.iteritems():
+            self.nodes[n] = Node(name=n, pbsnodes_dict=dict(s), debug_p=self.debug_p)
+
+
+    def __make_jobs(self):
+        """Make dict with job IDs as keys, and job properties as values"""
+        rawjobs = self.pbsquery.getjobs()
+        for j,p in rawjobs.iteritems():
+            self.jobs[j] = Job(id=j, pbsjobs_dict=dict(p), debug_p=self.debug_p)
+
+    def __make_queues(self):
+        """make dict with queue names as keys, and queue properties as values"""
+        rawqueues = self.pbsquery.getqueues()
+        for q,p in rawqueues.iteritems():
+            self.queues[q] = Queue(name=q, pbsqueue_dict=p)
+
+    def __make_server(self):
         self.__serverinfo = self.pbsquery.get_serverinfo()[self.servername]
         if self.debug_p:
             print 'FOOBAR: self.serverinfo =', self.__serverinfo
@@ -94,41 +133,7 @@ class QstatViewer:
             else:
                 self.__dict__[k] = v
 
-        self.__make_queues()
-        self.__make_jobs()
-        self.__make_nodes()
 
-
-    def __make_nodes(self):
-        """Make dict with node names as keys, and list of job objects as values"""
-
-        # make list of jobids running on the node
-        #node_jobs = {}
-        #for jobid,job in self.jobs.iteritems():
-        #    if job.exec_host:
-        #        for node_cpu in job.exec_host:
-        #            node = node_cpu.split('/')[0]
-        #            if node not in node_jobs:
-        #                node_jobs[node] = []
-        #            else:
-        #                node_jobs[node].append(jobid)
-
-        rawnodes = self.pbsquery.getnodes()
-        for n,s in rawnodes.iteritems():
-            self.nodes[n] = Node(name=n, pbsnodes_dict=dict(s), debug_p=self.debug_p)
-
-
-    def __make_jobs(self):
-        """Make dict with job IDs as keys, and job properties as values"""
-        rawjobs = self.pbsquery.getjobs()
-        for j,p in rawjobs.iteritems():
-            self.jobs[j] = Job(id=j, pbsjobs_dict=dict(p), debug_p=self.debug_p)
-
-    def __make_queues(self):
-        """make dict with queue names as keys, and queue properties as values"""
-        rawqueues = self.pbsquery.getqueues()
-        for q,p in rawqueues.iteritems():
-            self.queues[q] = Queue(name=q, pbsqueue_dict=p)
 
     def get_job(self, jobid):
         """Queries the queue for jobid"""

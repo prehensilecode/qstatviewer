@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+"""
+Displays information about one or more users' jobs
+"""
+
+# Author: David Chin <dwchin@acm.org>
+ 
+# Copyright 2013 Wake Forest University
+
+import sys, os, re
+import datetime
+import getpass
+from optparse import OptionParser
+
+import qstatviewer
+from qstatviewer.Memory import Memory
+
+def mem_stats(mem_req_list):
+    # input is a list of Memory, which has qty's in kiB
+    retval = {}
+
+    m = [mem.qty for mem in mem_req_list]
+
+    retval['min'] = Memory(min(m))
+    retval['max'] = Memory(max(m))
+    retval['mean'] = Memory(sum(m)/len(m))
+
+    return retval
+
+
+# This is needed in Python < 2.7 as the datetime.timedelta.total_seconds() 
+# method only appears in 2.7 and later.
+def total_seconds(td):
+    # td is a datetime.timedelta object; drop the microseconds
+    return (td.days * 86400 + td.seconds)
+
+
+def viewqueues(queue_names=None):
+    qv = qstatviewer.QstatViewer()
+
+    print("Server: {0}\n".format(qv.servername))
+    
+    if queue_names:
+        for qn in queue_names:
+            if not qn in qv.queues:
+                print("ERROR: no such queue {0}".format(qn))
+                sys.exit(1)
+            print("Queue: {0}".format(qn))
+            for k,v in sorted(qv.queues[qn].__dict__.iteritems()):
+                print("    {k:>18.18}: {v}".format(k=k, v=v))
+            print("")
+    else:
+        for queuename, queue in sorted(qv.queues.iteritems()):
+            print("Queue: {0}".format(queuename))
+            for k,v in sorted(queue.__dict__.iteritems()):
+                print("    {k:>18.18}: {v}".format(k=k, v=v))
+            print("")
+
+
+if __name__ == '__main__':
+    parser = OptionParser()
+    (options, args) = parser.parse_args()
+
+    # if no username given, and no options specified, then view user's own jobs
+    viewqueues(args)
+
