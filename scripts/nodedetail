@@ -65,6 +65,7 @@ def main(q, node_list, options):
         # re pats for handling shorthand clan names
         clanpat = re.compile(r'^(\d{2})$')
         bcpat   = re.compile(r'^bc(\d{2})$')
+        fullclanpat = re.compile(r'^clan(\d{2})$')
 
         gridpat = re.compile(r'^g(\d{2})$')
         bcgpat  = re.compile(r'^bcg(\d{2})$')
@@ -72,6 +73,7 @@ def main(q, node_list, options):
         for c in given_clan_list:
             cp = clanpat.search(c)
             bcp = bcpat.search(c)
+            fcp = fullclanpat.search(c)
             gp = gridpat.search(c)
             bcgp = bcgpat.search(c)
 
@@ -79,6 +81,8 @@ def main(q, node_list, options):
                 clan_list.append(''.join(['clan', cp.group(1)]))
             elif bcp:
                 clan_list.append(''.join(['clan', bcp.group(1)]))
+            elif fcp:
+                clan_list.append(''.join(['clan', fcp.group(1)]))
             elif gp:
                 clan_list.append(''.join(['grid', gp.group(1)]))
             elif bcgp:
