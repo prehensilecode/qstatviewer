@@ -75,14 +75,14 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
     total_ncpus_used = 0
     total_cput_usage = datetime.timedelta()
     total_mem_usage = Memory()
-    mem_req = []
+    vmem_req = []
     walltimes_req = []
     longest_walltime = datetime.timedelta(seconds=0)
     longest_wait = datetime.timedelta(seconds=0)
 
     print('{0}:'.format(qv.pbsquery.server))
     print("{j:<12} {u:<8} {g:>13} {q:<9} {jn:^24} {s:>6} {nd:>3} {t:>5} {f:^3.3} {mreq:>11} {muse:>11} {treq:>16}  S {tel:>16}  {ctime:>24}".format(j="JOB ID", u="USERNAME", 
-        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ MEM", muse="USE MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME", ctime="CREATED ON/WAITING FOR"));
+        g="GROUP", q="QUEUE", jn="JOBNAME", s="SessID", nd="NDS", t="TSK", f='NET', mreq="REQ VMEM", muse="USE MEM", treq="REQ WALLTIME", tel="ELAP WALLTIME", ctime="CREATED ON/WAITING FOR"));
     print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
     # print_this_p also tells us when a job matches criteria, and so
@@ -101,7 +101,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
     for jobid, j in sorted(qv.jobs.iteritems()):
         nodect = j.resource_list['nodect']
         ntasks = j.resource_list['ncpus']
-        mem    = j.resource_list['mem']
+        vmem   = j.resource_list['vmem']
         wallt_str = qstatviewer.timedeltastr(j.resource_list['walltime'])
 
         if user:
@@ -145,7 +145,7 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
             nodes_req.append(nodect)
             ncpus_req.append(ntasks)
 
-            mem_req.append(mem)
+            vmem_req.append(vmem)
 
             walltimes_req.append(j.resource_list['walltime'])
 
@@ -198,14 +198,14 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
             waiting = datetime.timedelta(days=waiting.days, seconds=waiting.seconds)  # drop the microseconds
             waiting = ' '.join(['Wait:', str(waiting)])
             waittime_list.append(waiting)
-            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
+            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {vmem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {waiting:>24}"
             if print_this_p:
-                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), muse='n/a', wallt=wallt_str, elapse=elapse, waiting=waiting))
+                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, vmem=vmem.pretty_print(), muse='n/a', wallt=wallt_str, elapse=elapse, waiting=waiting))
                 print_this_p = False
         elif j.state == 'R':
-            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {mem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {ctime:>24}"
+            formatstr = "{ji:<12} {job.owner:<8.8} {job.group:>13.13} {job.queue:<9.9} {job.name:^24.24} {job.session_id:>6} {nodect:>3d} {ntasks:>5d} {fab:^3.3} {vmem:>11.11} {muse:>11.11} {wallt:>16}  {job.job_state} {elapse:>16}  {ctime:>24}"
             if print_this_p:
-                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, mem=mem.pretty_print(), muse=muse.pretty_print(), wallt=wallt_str, elapse=elapse, ctime=str(j.ctime)))
+                print(formatstr.format(ji=jobid.split('.')[0], job=j, nodect=nodect, ntasks=ntasks, fab=job_fabric, vmem=vmem.pretty_print(), muse=muse.pretty_print(), wallt=wallt_str, elapse=elapse, ctime=str(j.ctime)))
                 print_this_p = False
 
 
@@ -275,8 +275,8 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
 
     print("")
 
-    if mem_req:
-        ms = mem_stats(mem_req)
+    if vmem_req:
+        ms = mem_stats(vmem_req)
         print("Min. memory request: {m:>11.11}                  Min. no. of nodes: {n:>2d}".format(m=ms['min'].pretty_print(),n=min(nodes_req)))
         print("Max. memory request: {m:>11.11}                  Max. no. of nodes: {n:>2d}".format(m=ms['max'].pretty_print(),n=max(nodes_req)))
         print("Mean memory request: {m:>11.11}                  Mean no. of nodes: {n:>5.2f}".format(m=ms['mean'].pretty_print(),n=(sum(nodes_req)/float(len(nodes_req)))))
