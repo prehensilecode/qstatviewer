@@ -96,7 +96,7 @@ def main(q, node_list, options):
     elif options.fabric:
         if options.fabric == 'eth':
             options.fabric = 'ethernet'
-        elif options.fabric == 'inf':
+        elif options.fabric == 'inf' or options.fabric == 'ib':
             options.fabric = 'infiniband'
 
         node_list = []
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     parser.add_option('-c', '--clan', type='str', dest='clan', metavar='CLAN',
                       help='show information about nodes in given CLAN(s) (comma-delimited, no spaces)')
     parser.add_option('-f', '--fabric', type='str', dest='fabric', metavar='FABRIC',
-                      help='show information about nodes with network FABRIC (eth, ethernet, inf, infiniband)')
+                      help='show information about nodes with network FABRIC (eth, ethernet, ib, inf, infiniband)')
     # XXX - watch out: use "nodeprop" because "property" is used by Python
     parser.add_option('-p', '--property', type='str', dest='nodeprop', metavar='PROPERTY',
                       help='show information about nodes with property PROPERTY (e.g. mem96gb, scr4gb)')
