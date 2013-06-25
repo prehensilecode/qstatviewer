@@ -66,7 +66,10 @@ class Job:
 
         self.error_path = pbsjobs_dict['Error_Path'][0]
 
-        self.init_work_dir = pbsjobs_dict['init_work_dir'][0]
+        if 'init_work_dir' in pbsjobs_dict:
+            self.init_work_dir = pbsjobs_dict['init_work_dir'][0]
+        else:
+            self.init_work_dir = None
 
         if 'exec_host' in pbsjobs_dict:
             self.exec_host = pbsjobs_dict['exec_host'][0].split('+')
