@@ -67,6 +67,7 @@ def total_seconds(td):
 
 
 def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queue=None):
+    print "FOOBAR: queue = ", queue
     n_jobs_running = 0
     n_jobs_queued = 0
     nodes_req = []
@@ -308,13 +309,13 @@ def viewjobs(qv, user=None, all=False, group=None, state=None, fabric=None, queu
         print("Mean walltime request: {w:>19}".format(w=wtreq_mean))
 
 
-def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None):
+def main(user=None, all=False, group=None, state=None, nodes=False, fabric=None, queue=None):
     qv = qstatviewer.QstatViewer()
 
     if nodes:
         jobs_on_nodes(qv)
     else:
-        viewjobs(qv=qv, user=user, all=all, group=group, state=state, fabric=fabric)
+        viewjobs(qv=qv, user=user, all=all, group=group, state=state, fabric=fabric, queue=queue)
 
 if __name__ == '__main__':
     usage = """usage: %prog [options] [USERNAME]
@@ -335,11 +336,13 @@ if __name__ == '__main__':
                       help='displays only jobs in queue QUEUE')
     (options, args) = parser.parse_args()
 
+    print "FOOBAR: options.queue = ", options.queue
+
     # if no username given, and no options specified, then view user's own jobs
-    if not args and (not options.all and not options.group and not options.state and not options.nodes and not options.fabric):
+    if not args and (not options.all and not options.group and not options.state and not options.nodes and not options.fabric and not options.queue):
         main(user=getpass.getuser())
     elif args:
         main(user=args[0])
     else:
-        main(user=None, all=options.all, group=options.group, state=options.state, nodes=options.nodes, fabric=options.fabric)
+        main(user=None, all=options.all, group=options.group, state=options.state, nodes=options.nodes, fabric=options.fabric, queue=options.queue)
 
